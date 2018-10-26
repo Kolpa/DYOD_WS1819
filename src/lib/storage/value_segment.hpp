@@ -25,7 +25,7 @@ class ValueSegment : public BaseSegment {
   // Return all values. This is the preferred method to check a value at a certain index. Usually you need to
   // access more than a single value anyway.
   // e.g. const auto& values = value_segment.values(); and then: values[i]; in your loop.
-  const std::vector<T>& values() const { return _values; };
+  const std::vector<T>& values() const { return _values; }
 
  protected:
   std::vector<T> _values;
