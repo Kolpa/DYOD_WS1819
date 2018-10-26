@@ -1,5 +1,7 @@
 #include "storage_manager.hpp"
 
+#include <algorithm>
+#include <map>
 #include <memory>
 #include <string>
 #include <utility>
@@ -10,38 +12,44 @@
 namespace opossum {
 
 StorageManager& StorageManager::get() {
-  return *(new StorageManager());
-  // A really hacky fix to get the tests to run - replace this with your implementation
+  static StorageManager storage_manager;
+  return storage_manager;
 }
 
 void StorageManager::add_table(const std::string& name, std::shared_ptr<Table> table) {
-  // Implementation goes here
+  DebugAssert(!has_table(name), "The table " + name + " already exists.");
+  _tables.emplace(name, table);
 }
 
 void StorageManager::drop_table(const std::string& name) {
-  // Implementation goes here
+  DebugAssert(has_table(name), "Table " + name + " not found.");
+  _tables.erase(name);
 }
 
 std::shared_ptr<Table> StorageManager::get_table(const std::string& name) const {
-  // Implementation goes here
-  return nullptr;
+  DebugAssert(has_table(name), "Table " + name + " not found.");
+  return _tables.at(name);
 }
 
 bool StorageManager::has_table(const std::string& name) const {
-  // Implementation goes here
-  return false;
+  const auto kvp = _tables.find(name);
+  return kvp != _tables.end();
 }
 
 std::vector<std::string> StorageManager::table_names() const {
-  throw std::runtime_error("Implement StorageManager::table_names");
+  std::vector<std::string> names;
+  std::transform(_tables.cbegin(), _tables.cend(), std::back_inserter(names),
+                 [](const auto& kvp) { return kvp.first; });
+  return names;
 }
 
 void StorageManager::print(std::ostream& out) const {
-  // Implementation goes here
+  for (const auto& [tbl_name, table] : _tables) {
+    out << tbl_name << ", " << table->column_count() << ", " << table->row_count() << ", " << table->chunk_count();
+    out << std::endl;
+  }
 }
 
-void StorageManager::reset() {
-  // Implementation goes here;
-}
+void StorageManager::reset() { _tables.clear(); }
 
 }  // namespace opossum
