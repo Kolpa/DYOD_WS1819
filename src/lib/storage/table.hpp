@@ -86,5 +86,8 @@ class Table : private Noncopyable {
   // creates and new chunk and adds it to the table. _current_chunk is updated to point to the
   // newly created chnunk.
   void _open_new_chunk();
+
+  // returns true if the maximum number of rows in chunk has been reached.
+  bool _is_full(const Chunk& chunk) const;
 };
 }  // namespace opossum
