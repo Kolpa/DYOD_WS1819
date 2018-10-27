@@ -76,9 +76,14 @@ class Table : private Noncopyable {
   void append(std::vector<AllTypeVariant> values);
 
  protected:
-  uint32_t _chunk_size;
+  const uint32_t _chunk_size;
+  std::shared_ptr<Chunk> _current_chunk;
   std::vector<std::shared_ptr<Chunk>> _chunks;
   std::vector<std::string> _column_names;
   std::vector<std::string> _column_types;
+
+  // creates and new chunk and adds it to the table. _current_chunk is updated to point to the
+  // newly created chnunk.
+  void _open_new_chunk();
 };
 }  // namespace opossum
