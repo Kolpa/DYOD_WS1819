@@ -32,8 +32,8 @@ std::shared_ptr<Table> StorageManager::get_table(const std::string& name) const 
 }
 
 bool StorageManager::has_table(const std::string& name) const {
-  const auto kvp = _tables.find(name);
-  return kvp != _tables.end();
+  const auto kvp_it = _tables.find(name);
+  return kvp_it != _tables.cend();
 }
 
 std::vector<std::string> StorageManager::table_names() const {
