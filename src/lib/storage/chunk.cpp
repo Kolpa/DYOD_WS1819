@@ -14,30 +14,29 @@
 
 namespace opossum {
 
-void Chunk::add_segment(std::shared_ptr<BaseSegment> segment) { _columns.push_back(segment); }
+void Chunk::add_segment(std::shared_ptr<BaseSegment> segment) { _segments.push_back(segment); }
 
 void Chunk::append(const std::vector<AllTypeVariant>& values) {
-  DebugAssert(values.size() == _columns.size(),
+  DebugAssert(values.size() == _segments.size(),
               "Number of passed arguments does not equal the number of stored columns.");
-  for (std::size_t index = 0; index < values.size(); ++index) {
-    _columns.at(index).get()->append(values.at(index));
+  auto value_iter = values.cbegin();
+  for (auto const& column : _segments) {
+    column->append(*value_iter);
+    ++value_iter;
   }
 }
 
 std::shared_ptr<BaseSegment> Chunk::get_segment(ColumnID column_id) const {
-  if (_columns.size() > column_id.t) {
-    return _columns.at(column_id.t);
-  }
-  return nullptr;
+  return _segments[column_id];
 }
 
-uint16_t Chunk::column_count() const { return _columns.size(); }
+uint16_t Chunk::column_count() const { return _segments.size(); }
 
 uint32_t Chunk::size() const {
-  if (_columns.size() == 0) {
+  if (_segments.empty()) {
     return 0;
   } else {
-    return _columns.at(0).get()->size();
+    return _segments[0]->size();
   }
 }
 
