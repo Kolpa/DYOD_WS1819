@@ -14,27 +14,30 @@
 
 namespace opossum {
 
-void Chunk::add_segment(std::shared_ptr<BaseSegment> segment) {
-  // Implementation goes here
-}
+void Chunk::add_segment(std::shared_ptr<BaseSegment> segment) { _segments.push_back(segment); }
 
 void Chunk::append(const std::vector<AllTypeVariant>& values) {
-  // Implementation goes here
+  DebugAssert(values.size() == _segments.size(),
+              "Number of passed arguments does not equal the number of stored columns.");
+  auto value_iter = values.cbegin();
+  for (auto const& column : _segments) {
+    column->append(*value_iter);
+    ++value_iter;
+  }
 }
 
 std::shared_ptr<BaseSegment> Chunk::get_segment(ColumnID column_id) const {
-  // Implementation goes here
-  return nullptr;
+  return _segments[column_id];
 }
 
-uint16_t Chunk::column_count() const {
-  // Implementation goes here
-  return 0;
-}
+uint16_t Chunk::column_count() const { return _segments.size(); }
 
 uint32_t Chunk::size() const {
-  // Implementation goes here
-  return 0;
+  if (_segments.empty()) {
+    return 0;
+  } else {
+    return _segments[0]->size();
+  }
 }
 
 }  // namespace opossum
