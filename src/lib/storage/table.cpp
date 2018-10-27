@@ -28,7 +28,7 @@ void Table::add_column(const std::string& name, const std::string& type) {
     _column_names.push_back(name);
     _column_types.push_back(type);
     auto segment = make_shared_by_data_type<BaseSegment, ValueSegment>(type);
-    _chunks.back().get()->add_segment(segment);
+    _chunks.back()->add_segment(segment);
   }
 }
 
@@ -36,9 +36,9 @@ void Table::append(std::vector<AllTypeVariant> values) {
   _chunks.back().get()->append(values);
   if (_chunks.back().get()->size() == _chunk_size) {
     auto chunk = std::make_shared<Chunk>();
-    for (uint16_t column_index = 0; column_index < _chunks.back().get()->column_count(); ++column_index) {
-      auto segment = make_shared_by_data_type<BaseSegment, ValueSegment>(_column_types.at(column_index));
-      chunk.get()->add_segment(segment);
+    for(auto const& type: _column_types){
+      auto segment = make_shared_by_data_type<BaseSegment, ValueSegment>(type);
+      chunk->add_segment(segment);
     }
     _chunks.push_back(chunk);
   }
@@ -49,7 +49,7 @@ uint16_t Table::column_count() const { return static_cast<uint16_t>(_column_name
 uint64_t Table::row_count() const {
   uint64_t number_of_rows = 0;
   for (auto const& chunk : _chunks) {
-    number_of_rows += chunk.get()->size();
+    number_of_rows += chunk->size();
   }
   return number_of_rows;
 }
@@ -70,11 +70,11 @@ uint32_t Table::chunk_size() const { return _chunk_size; }
 
 const std::vector<std::string>& Table::column_names() const { return _column_names; }
 
-const std::string& Table::column_name(ColumnID column_id) const { return _column_names.at(column_id); }
+const std::string& Table::column_name(ColumnID column_id) const { return _column_names[column_id]; }
 
-const std::string& Table::column_type(ColumnID column_id) const { return _column_types.at(column_id); }
+const std::string& Table::column_type(ColumnID column_id) const { return _column_types[column_id]; }
 
-Chunk& Table::get_chunk(ChunkID chunk_id) { return *_chunks.at(chunk_id).get(); }
+Chunk& Table::get_chunk(ChunkID chunk_id) { return *_chunks[chunk_id]; }
 
 const Chunk& Table::get_chunk(ChunkID chunk_id) const { return get_chunk(chunk_id); }
 
