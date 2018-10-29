@@ -1,4 +1,5 @@
 #include <memory>
+#include <string>
 
 #include "../base_test.hpp"
 #include "gtest/gtest.h"
@@ -32,6 +33,7 @@ class StorageChunkTest : public BaseTest {
 TEST_F(StorageChunkTest, AddSegmentToChunk) {
   EXPECT_EQ(c.size(), 0u);
   c.add_segment(int_value_segment);
+  EXPECT_EQ(c.size(), 3u);
   c.add_segment(string_value_segment);
   EXPECT_EQ(c.size(), 3u);
 }
@@ -56,6 +58,10 @@ TEST_F(StorageChunkTest, RetrieveSegment) {
 
   auto base_segment = c.get_segment(ColumnID{0});
   EXPECT_EQ(base_segment->size(), 4u);
+  EXPECT_EQ(type_cast<int>((*base_segment)[3]), 2);
+
+  base_segment = c.get_segment(ColumnID{1});
+  EXPECT_EQ(type_cast<std::string>((*base_segment)[3]), "two");
 }
 
 TEST_F(StorageChunkTest, UnknownSegmentType) {
@@ -64,6 +70,14 @@ TEST_F(StorageChunkTest, UnknownSegmentType) {
     auto wrapper = []() { make_shared_by_data_type<BaseSegment, ValueSegment>("weird_type"); };
     EXPECT_THROW(wrapper(), std::logic_error);
   }
+}
+
+TEST_F(StorageChunkTest, GetColumnCount) {
+  EXPECT_EQ(c.column_count(), 0u);
+  c.add_segment(int_value_segment);
+  EXPECT_EQ(c.column_count(), 1u);
+  c.add_segment(int_value_segment);
+  EXPECT_EQ(c.column_count(), 2u);
 }
 
 }  // namespace opossum
