@@ -45,7 +45,7 @@ std::vector<std::string> StorageManager::table_names() const {
 
 void StorageManager::print(std::ostream& out) const {
   for (const auto& [tbl_name, table] : _tables) {
-    out << tbl_name << ", " << table->column_count() << ", " << table->row_count() << ", " << table->chunk_count();
+    out << "name[" << tbl_name << "], #columns[" << table->column_count() << "], #rows[" << table->row_count() << "], #chunks[" << table->chunk_count() << "]";
     out << std::endl;
   }
 }
