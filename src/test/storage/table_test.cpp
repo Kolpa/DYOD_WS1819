@@ -9,6 +9,7 @@
 
 #include "../lib/resolve_type.hpp"
 #include "../lib/storage/table.hpp"
+#include "../lib/types.hpp"
 
 namespace opossum {
 
@@ -21,6 +22,16 @@ class StorageTableTest : public BaseTest {
 
   Table t{2};
 };
+
+TEST_F(StorageTableTest, AddColumn) {
+  Table table;
+  EXPECT_EQ(table.column_count(), 0u);
+  table.add_column("a", "int");
+  EXPECT_EQ(table.column_count(), 1u);
+  table.append({0});
+  EXPECT_EQ(table.column_count(), 1u);
+  EXPECT_THROW(table.add_column("b", "int"), std::exception);
+}
 
 TEST_F(StorageTableTest, ChunkCount) {
   EXPECT_EQ(t.chunk_count(), 1u);
@@ -40,6 +51,71 @@ TEST_F(StorageTableTest, GetChunk) {
   t.get_chunk(ChunkID{1});
 }
 
+TEST_F(StorageTableTest, EmplaceChunkOnNonEmptyTable) {
+  Chunk c;
+  c.add_segment(make_shared_by_data_type<BaseSegment, ValueSegment>("int"));
+  c.add_segment(make_shared_by_data_type<BaseSegment, ValueSegment>("string"));
+  t.append({1, "DYOD"});
+
+  // Fail, because the last chunk is not completely full
+  EXPECT_THROW(t.emplace_chunk(std::move(c)), std::exception);
+
+  t.append({2, "DYOD"});
+  EXPECT_EQ(t.chunk_count(), 1u);
+  c.add_segment(make_shared_by_data_type<BaseSegment, ValueSegment>("int"));
+  c.add_segment(make_shared_by_data_type<BaseSegment, ValueSegment>("string"));
+  // line should succeed.
+  t.emplace_chunk(std::move(c));
+  EXPECT_EQ(t.chunk_count(), 2u);
+
+  // fill emplaced chunk
+  t.append({3, "DYOD"});
+  t.append({4, "DYOD"});
+  EXPECT_EQ(t.chunk_count(), 2u);
+
+  c.add_segment(make_shared_by_data_type<BaseSegment, ValueSegment>("int"));
+  // fail, because chunk as wrong number of segments
+  EXPECT_THROW(t.emplace_chunk(std::move(c)), std::exception);
+}
+
+TEST_F(StorageTableTest, EmplaceChunkOnEmptyTable) {
+  Chunk c;
+  // Initially the table has one chunk
+  EXPECT_EQ(t.chunk_count(), 1u);
+
+  t.emplace_chunk(std::move(c));
+  // after having emplaced another chunk, the table should still have one chunk.
+  EXPECT_EQ(t.chunk_count(), 1u);
+
+  // The chunk has no segments. Appending a row should fail.
+  EXPECT_THROW(t.append({42, "DYOD", 3.14}), std::exception);
+
+  c.add_segment(make_shared_by_data_type<BaseSegment, ValueSegment>("int"));
+  c.add_segment(make_shared_by_data_type<BaseSegment, ValueSegment>("string"));
+  c.add_segment(make_shared_by_data_type<BaseSegment, ValueSegment>("double"));
+  t.emplace_chunk(std::move(c));
+  // we replaced the chunk with no segments by a chunk with 3 segments. The following statement should succeed.
+  t.append({42, "DYOD", 3.14});
+
+  // since we now have a row in our table and
+  EXPECT_THROW(t.emplace_chunk(std::move(c)), std::exception);
+}
+
+TEST_F(StorageTableTest, EmplaceTooBigChunk) {
+  Chunk c;
+
+  c.add_segment(make_shared_by_data_type<BaseSegment, ValueSegment>("int"));
+  c.add_segment(make_shared_by_data_type<BaseSegment, ValueSegment>("string"));
+  c.add_segment(make_shared_by_data_type<BaseSegment, ValueSegment>("double"));
+
+  c.append({42, "Develop", 3.14});
+  c.append({42, "Your", 3.14});
+  c.append({42, "Own", 3.14});
+
+  // fail because chunk_size is bigger than chunk_size of table.
+  EXPECT_THROW(t.emplace_chunk(std::move(c)), std::exception);
+}
+
 TEST_F(StorageTableTest, ColumnCount) { EXPECT_EQ(t.column_count(), 2u); }
 
 TEST_F(StorageTableTest, RowCount) {
@@ -57,6 +133,12 @@ TEST_F(StorageTableTest, GetColumnName) {
   // EXPECT_THROW(t.column_name(ColumnID{2}), std::exception);
 }
 
+TEST_F(StorageTableTest, GetColumnNames) {
+  EXPECT_EQ(t.column_names().size(), 2u);
+  EXPECT_EQ(t.column_names()[0], "col_1");
+  EXPECT_EQ(t.column_names()[1], "col_2");
+}
+
 TEST_F(StorageTableTest, GetColumnType) {
   EXPECT_EQ(t.column_type(ColumnID{0}), "int");
   EXPECT_EQ(t.column_type(ColumnID{1}), "string");
@@ -69,6 +151,19 @@ TEST_F(StorageTableTest, GetColumnIdByName) {
   EXPECT_THROW(t.column_id_by_name("no_column_name"), std::exception);
 }
 
-TEST_F(StorageTableTest, GetChunkSize) { EXPECT_EQ(t.chunk_size(), 2u); }
+TEST_F(StorageTableTest, GetChunkSize) {
+  EXPECT_EQ(t.chunk_size(), 2u);
+
+  Table table;
+  EXPECT_EQ(table.chunk_size(), std::numeric_limits<ChunkOffset>::max() - 1);
+}
+
+TEST_F(StorageTableTest, Append) {
+  EXPECT_EQ(t.row_count(), 0u);
+  t.append({42, "DY"});
+  t.append({43, "OD"});
+  EXPECT_EQ(t.row_count(), 2u);
+  EXPECT_EQ(type_cast<int>((*t.get_chunk(ChunkID{0}).get_segment(ColumnID{0}))[0]), 42);
+}
 
 }  // namespace opossum
