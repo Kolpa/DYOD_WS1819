@@ -38,15 +38,16 @@ bool StorageManager::has_table(const std::string& name) const {
 
 std::vector<std::string> StorageManager::table_names() const {
   std::vector<std::string> names;
+  names.reserve(_tables.size());
   std::transform(_tables.cbegin(), _tables.cend(), std::back_inserter(names),
-                 [](const auto& kvp) { return kvp.first; });
+                 [](const auto& key_value) { return key_value.first; });
   return names;
 }
 
 void StorageManager::print(std::ostream& out) const {
   for (const auto& [tbl_name, table] : _tables) {
     out << "name[" << tbl_name << "], #columns[" << table->column_count() << "], #rows[" << table->row_count() << "], #chunks[" << table->chunk_count() << "]";
-    out << std::endl;
+        << std::endl;
   }
 }
 
