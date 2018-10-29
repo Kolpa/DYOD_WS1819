@@ -16,8 +16,7 @@ namespace opossum {
 template <typename T>
 const AllTypeVariant ValueSegment<T>::operator[](const size_t offset) const {
   PerformanceWarning("operator[] used");
-  AllTypeVariant var = _values[offset];
-  return var;
+  return _values[offset];
 }
 
 template <typename T>
