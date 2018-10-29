@@ -31,6 +31,11 @@ size_t ValueSegment<T>::size() const {
   return _values.size();
 }
 
+template <typename T>
+const std::vector<T>& ValueSegment<T>::values() const {
+  return _values;
+}
+
 EXPLICITLY_INSTANTIATE_DATA_TYPES(ValueSegment);
 
 }  // namespace opossum
