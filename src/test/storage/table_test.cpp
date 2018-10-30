@@ -74,7 +74,7 @@ TEST_F(StorageTableTest, EmplaceChunkOnNonEmptyTable) {
   EXPECT_EQ(t.chunk_count(), 2u);
 
   c.add_segment(make_shared_by_data_type<BaseSegment, ValueSegment>("int"));
-  // fail, because chunk as wrong number of segments
+  // fail, because chunk has wrong number of segments
   EXPECT_THROW(t.emplace_chunk(std::move(c)), std::exception);
 }
 
