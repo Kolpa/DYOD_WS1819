@@ -77,6 +77,8 @@ Chunk& Table::get_chunk(ChunkID chunk_id) { return *_chunks[chunk_id]; }
 bool Table::_is_full(const Chunk& chunk) const { return chunk.size() == _chunk_size; }
 
 void Table::emplace_chunk(Chunk chunk) {
+  DebugAssert(chunk.size() <= _chunk_size, "The chunk's size must not exceed the maximum chunk size of the table.");
+
   if (row_count() == 0) {
     _current_chunk = std::make_shared<Chunk>(std::move(chunk));
     _chunks[0] = _current_chunk;
@@ -84,7 +86,6 @@ void Table::emplace_chunk(Chunk chunk) {
   }
 
   DebugAssert(_is_full(*_current_chunk), "The last chunk must be completely filled.");
-  DebugAssert(chunk.size() <= _chunk_size, "The chunk's size must not exceed the maximum chunk size of the table.");
   // This is just a primitive verification
   DebugAssert(chunk.column_count() == column_count(), "The chunk's columns must match to the columns of the table.");
   _current_chunk = std::make_shared<Chunk>(std::move(chunk));
