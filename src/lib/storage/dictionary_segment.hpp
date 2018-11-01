@@ -25,48 +25,72 @@ class DictionarySegment : public BaseSegment {
   /**
    * Creates a Dictionary segment from a given value segment.
    */
-  explicit DictionarySegment(const std::shared_ptr<BaseSegment>& base_segment);
+  explicit DictionarySegment(const std::shared_ptr<BaseSegment>& base_segment) {}
 
   // SEMINAR INFORMATION: Since most of these methods depend on the template parameter, you will have to implement
   // the DictionarySegment in this file. Replace the method signatures with actual implementations.
 
   // return the value at a certain position. If you want to write efficient operators, back off!
-  const AllTypeVariant operator[](const size_t i) const override;
+  const AllTypeVariant operator[](const size_t i) const {
+    throw std::runtime_error("Not implemented");
+  }
 
   // return the value at a certain position.
-  const T get(const size_t i) const;
+  const T get(const size_t i) const {
+    throw std::runtime_error("Not implemented");
+  }
 
   // dictionary segments are immutable
-  void append(const AllTypeVariant&) override;
+  void append(const AllTypeVariant&) {
+    throw std::runtime_error("Dictionary segments are immutable");
+  }
 
   // returns an underlying dictionary
-  std::shared_ptr<const std::vector<T>> dictionary() const;
+  std::shared_ptr<const std::vector<T>> dictionary() const {
+    throw std::runtime_error("Not implemented");
+  }
 
   // returns an underlying data structure
-  std::shared_ptr<const BaseAttributeVector> attribute_vector() const;
+  std::shared_ptr<const BaseAttributeVector> attribute_vector() const {
+    throw std::runtime_error("Not implemented");
+  }
 
   // return the value represented by a given ValueID
-  const T& value_by_value_id(ValueID value_id) const;
+  const T& value_by_value_id(ValueID value_id) const {
+    throw std::runtime_error("Not implemented");
+  }
 
   // returns the first value ID that refers to a value >= the search value
   // returns INVALID_VALUE_ID if all values are smaller than the search value
-  ValueID lower_bound(T value) const;
+  ValueID lower_bound(T value) const {
+    throw std::runtime_error("Not implemented");
+  }
 
   // same as lower_bound(T), but accepts an AllTypeVariant
-  ValueID lower_bound(const AllTypeVariant& value) const;
+  ValueID lower_bound(const AllTypeVariant& value) const {
+    throw std::runtime_error("Not implemented");
+  }
 
   // returns the first value ID that refers to a value > the search value
   // returns INVALID_VALUE_ID if all values are smaller than or equal to the search value
-  ValueID upper_bound(T value) const;
+  ValueID upper_bound(T value) const {
+    throw std::runtime_error("Not implemented");
+  }
 
   // same as upper_bound(T), but accepts an AllTypeVariant
-  ValueID upper_bound(const AllTypeVariant& value) const;
+  ValueID upper_bound(const AllTypeVariant& value) const {
+    throw std::runtime_error("Not implemented");
+  }
 
   // return the number of unique_values (dictionary entries)
-  size_t unique_values_count() const;
+  size_t unique_values_count() const {
+    throw std::runtime_error("Not implemented");
+  }
 
   // return the number of entries
-  size_t size() const override;
+  size_t size() const {
+    throw std::runtime_error("Not implemented");
+  }
 
  protected:
   std::shared_ptr<std::vector<T>> _dictionary;

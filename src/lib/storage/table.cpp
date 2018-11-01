@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "dictionary_segment.hpp"
 #include "value_segment.hpp"
 
 #include "resolve_type.hpp"
@@ -94,6 +95,26 @@ void Table::emplace_chunk(Chunk chunk) {
 
 const Chunk& Table::get_chunk(ChunkID chunk_id) const { return get_chunk(chunk_id); }
 
-void Table::compress_chunk(ChunkID chunk_id) { throw std::runtime_error("Implement Table::compress_chunk"); }
+void Table::compress_chunk(ChunkID chunk_id) {
+  // 0. neuen Chunk erzeugen - easy
+  Chunk compressed_chunk;
+
+  // 1. chunk holen -- get chunk
+  const auto& uncompressed_chunk = get_chunk(chunk_id);
+
+  // 1.1 Segmente über get segment holen
+  for (ColumnID column_id{0}; column_id < uncompressed_chunk.column_count(); ++column_id) {
+    const auto segment = uncompressed_chunk.get_segment(column_id);
+    // 2. Segmente komprimieren - erfolgt im Konstruktor des Dictionary segments
+    const auto dictionary_segment =
+        make_shared_by_data_type<BaseSegment, DictionarySegment>(column_type(column_id), segment);
+    // 4. Segmente zu neuem Chunk hinzufügen - chunk.add_segment
+    compressed_chunk.add_segment(dictionary_segment);
+  }
+
+  // TODO: Mutex auf Chunk
+  // 5. Chunk ersetzen // Nebenläufigkeit beachten _chunks[chunk_id] = new_chunk.
+  _chunks[chunk_id] = std::make_shared<Chunk>(std::move(compressed_chunk));
+}
 
 }  // namespace opossum
