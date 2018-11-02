@@ -8,6 +8,7 @@
 
 namespace opossum {
 
+// Creates a Dictionary segment from a given value segment.
 template <class T>
 DictionarySegment<T>::DictionarySegment(const std::shared_ptr<BaseSegment>& base_segment) {
   throw std::runtime_error("Implementation missing.");
