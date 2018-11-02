@@ -8,6 +8,7 @@ set(
     storage/chunk.cpp
     storage/chunk.hpp
     storage/dictionary_segment.hpp
+    storage/dictionary_segment.cpp
     storage/storage_manager.cpp
     storage/storage_manager.hpp
     storage/table.cpp

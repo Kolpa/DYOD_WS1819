@@ -6,6 +6,8 @@
 #include <utility>
 #include <vector>
 
+#include "base_segment.hpp"
+
 #include "all_type_variant.hpp"
 #include "types.hpp"
 
