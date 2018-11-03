@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base_segment.hpp"
+#include "value_segment.hpp"
 
 #include "all_type_variant.hpp"
 #include "types.hpp"
@@ -73,6 +74,10 @@ class DictionarySegment : public BaseSegment {
  protected:
   std::shared_ptr<std::vector<T>> _dictionary;
   std::shared_ptr<BaseAttributeVector> _attribute_vector;
+
+  private:
+    void _init_dictionary(const std::shared_ptr<ValueSegment<T>>& base_segment);
+    void _init_attribute_vector(const std::shared_ptr<ValueSegment<T>>& base_segment);
 };
 
 }  // namespace opossum

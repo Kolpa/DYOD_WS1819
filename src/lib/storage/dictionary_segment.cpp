@@ -1,4 +1,7 @@
 #include "dictionary_segment.hpp"
+
+#include "value_segment.hpp"
+#include "fitted_attribute_vector.hpp"
 #include <limits>
 #include <memory>
 #include <sstream>
@@ -11,7 +14,9 @@ namespace opossum {
 // Creates a Dictionary segment from a given value segment.
 template <class T>
 DictionarySegment<T>::DictionarySegment(const std::shared_ptr<BaseSegment>& base_segment) {
-  throw std::runtime_error("Implementation missing.");
+  const auto value_segment = std::dynamic_pointer_cast<ValueSegment<T>>(base_segment);
+  //TODO(Marcel) build sorted dictionary
+  //TODO(Marcel) attribute vector
 }
 
 // SEMINAR INFORMATION: Since most of these methods depend on the template parameter, you will have to implement
@@ -90,5 +95,26 @@ template <typename T>
 size_t DictionarySegment<T>::size() const {
   throw std::runtime_error("Implementation missing.");
 }
+
+template <typename T>
+void DictionarySegment<T>::_init_dictionary(const std::shared_ptr<ValueSegment<T>>& value_segment) {
+
+}
+
+template <typename T>
+void DictionarySegment<T>::_init_attribute_vector(const std::shared_ptr<ValueSegment<T>>& value_segment) {
+  //TODO(Marcel)
+  if(value_segment->size() <= std::numeric_limits<uint8_t>::max()){
+    _attribute_vector = std::make_shared<FittedAttributeVector<uint8_t >>();
+  }else if(value_segment->size() <= std::numeric_limits<uint16_t>::max()){
+    _attribute_vector = std::make_shared<FittedAttributeVector<uint16_t >>();
+  }else{
+    _attribute_vector = std::make_shared<FittedAttributeVector<uint32_t >>();
+  }
+
+}
+
+   EXPLICITLY_INSTANTIATE_DATA_TYPES(DictionarySegment);
+
 
 }  // namespace opossum

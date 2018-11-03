@@ -17,13 +17,13 @@ class BaseAttributeVector : private Noncopyable {
   BaseAttributeVector& operator=(BaseAttributeVector&&) = default;
 
   // returns the value id at a given position
-  virtual ValueID get(const size_t i) const = 0;
+  virtual ValueID get(const ChunkOffset i) const = 0;
 
   // sets the value id at a given position
-  virtual void set(const size_t i, const ValueID value_id) = 0;
+  virtual void set(const ChunkOffset i, const ValueID value_id) = 0;
 
   // returns the number of values
-  virtual size_t size() const = 0;
+  virtual ChunkOffset size() const = 0;
 
   // returns the width of biggest value id in bytes
   virtual AttributeVectorWidth width() const = 0;

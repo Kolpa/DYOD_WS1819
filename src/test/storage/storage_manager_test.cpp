@@ -46,8 +46,8 @@ namespace opossum {
  }
 
  TEST_F(StorageStorageManagerTest, HasTable) {
-   auto& sm = StorageManager::get();
+   auto &sm = StorageManager::get();
    EXPECT_EQ(sm.has_table("first_table"), true);
-
+ }
 
 }  // namespace opossum
