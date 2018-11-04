@@ -11,6 +11,7 @@
 
 #include "value_segment.hpp"
 
+#include "dictionary_segment.hpp"
 #include "resolve_type.hpp"
 #include "types.hpp"
 #include "utils/assert.hpp"
@@ -94,6 +95,24 @@ void Table::emplace_chunk(Chunk chunk) {
 
 const Chunk& Table::get_chunk(ChunkID chunk_id) const { return get_chunk(chunk_id); }
 
-void Table::compress_chunk(ChunkID chunk_id) { throw std::runtime_error("Implement Table::compress_chunk"); }
+void Table::compress_chunk(ChunkID chunk_id) {
+  DebugAssert(_is_full(*_chunks[chunk_id]), "Chunk to be compressed is not full.");
+  auto& chunk = _chunks[chunk_id];
+  const auto compressed_chunk = std::make_shared<Chunk>();
+
+  // fill compressed segment with content
+  for (ColumnID column_id{0}; column_id < chunk->column_count(); ++column_id) {
+    const auto uncompressed_segment = chunk->get_segment(column_id);
+    std::string type = _column_types[column_id];
+    auto compressed_segment = make_shared_by_data_type<BaseSegment, DictionarySegment>(type, uncompressed_segment);
+    compressed_chunk->add_segment(compressed_segment);
+  }
+
+  // replace the uncompressed segment with the compressed one.
+  std::mutex mutex;
+  mutex.lock();
+  chunk = compressed_chunk;
+  mutex.unlock();
+}
 
 }  // namespace opossum

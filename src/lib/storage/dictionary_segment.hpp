@@ -1,5 +1,9 @@
 #pragma once
 
+#include <limits>
+#include <memory>
+#include <vector>
+
 #include "base_segment.hpp"
 #include "value_segment.hpp"
 
@@ -69,9 +73,9 @@ class DictionarySegment : public BaseSegment {
   std::shared_ptr<std::vector<T>> _dictionary;
   std::shared_ptr<BaseAttributeVector> _attribute_vector;
 
-  private:
-    void _init_dictionary(const std::shared_ptr<ValueSegment<T>>& base_segment);
-    void _init_attribute_vector(const std::shared_ptr<ValueSegment<T>>& base_segment);
+ private:
+  void _init_dictionary(const std::shared_ptr<ValueSegment<T>>& base_segment);
+  void _init_attribute_vector(const std::shared_ptr<ValueSegment<T>>& base_segment);
 };
 
 }  // namespace opossum
