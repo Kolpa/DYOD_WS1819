@@ -103,23 +103,10 @@ namespace opossum {
 
     template<typename T>
     void DictionarySegment<T>::_init_dictionary(const std::shared_ptr<ValueSegment<T>> &value_segment) {
-        _dictionary = std::make_shared<std::vector<T>>();
-        for (const auto &seg_value: value_segment->values()) {
-            auto dict_iter = _dictionary->cbegin();
-            bool inserted = false;
-            bool contained = false;
-            while (!inserted && !contained) {
-                // insert the segment value if the end of dictionary is reached or
-                // if the segment value is less than the current iterated dict value
-                if (dict_iter == _dictionary->cend() || seg_value < *dict_iter) {
-                    _dictionary->insert(dict_iter, seg_value);
-                    inserted = true;
-                } else if (*dict_iter == seg_value) {
-                    contained = true;
-                }
-                ++dict_iter;
-            }
-        }
+        _dictionary = std::make_shared<std::vector<T>>(std::move(value_segment->values()));
+        std::sort(_dictionary->begin(), _dictionary->end());
+        auto begin_erase_iter = std::unique(_dictionary->begin(), _dictionary->end());
+        _dictionary->erase(begin_erase_iter, _dictionary->cend());
     }
 
     template<typename T>
