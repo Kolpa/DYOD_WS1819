@@ -4,6 +4,7 @@
 #include <map>
 #include <memory>
 #include <mutex>
+#include <shared_mutex>
 #include <string>
 #include <utility>
 #include <vector>
@@ -85,6 +86,7 @@ class Table : private Noncopyable {
   std::vector<std::shared_ptr<Chunk>> _chunks;
   std::vector<std::string> _column_names;
   std::vector<std::string> _column_types;
+  mutable std::shared_mutex _chunks_mutex;
 
   // creates and new chunk and adds it to the table. _current_chunk is updated to point to the
   // newly created chnunk.

@@ -32,7 +32,8 @@ class DictionarySegment : public BaseSegment {
    * Creates a Dictionary segment from a given value segment.
    */
   explicit DictionarySegment(const std::shared_ptr<BaseSegment>& base_segment) {
-
+    // We imply that BaseSegment will always be a value segment.
+    // If not the code should fail in the next line.
     const auto value_segment = std::static_pointer_cast<ValueSegment<T>>(base_segment);
     _initialize_dictionary(value_segment);
     _initialize_attribute_vector(value_segment);
@@ -74,13 +75,17 @@ class DictionarySegment : public BaseSegment {
   // returns the first value ID that refers to a value >= the search value
   // returns INVALID_VALUE_ID if all values are smaller than the search value
   ValueID lower_bound(T value) const {
-    return _index_of(value);
+    const auto it = std::lower_bound(_dictionary->cbegin(), _dictionary->cend(), value);
+    if (it == _dictionary->cend()) {
+      return INVALID_VALUE_ID;
+    }
+
+    return ValueID {static_cast<uint32_t>(std::distance(_dictionary->cbegin(), it))};
   }
 
   // same as lower_bound(T), but accepts an AllTypeVariant
   ValueID lower_bound(const AllTypeVariant& value) const {
-    // Todo: Cast required?
-    return lower_bound(static_cast<T>(value));
+    return lower_bound(value);
   }
 
   // returns the first value ID that refers to a value > the search value
@@ -96,8 +101,7 @@ class DictionarySegment : public BaseSegment {
 
   // same as upper_bound(T), but accepts an AllTypeVariant
   ValueID upper_bound(const AllTypeVariant& value) const {
-    // Todo: Cast required?
-    return upper_bound(static_cast<T>(value));
+    return upper_bound(value);
   }
 
   // return the number of unique_values (dictionary entries)
@@ -136,13 +140,14 @@ class DictionarySegment : public BaseSegment {
     } else if (unique_values_count() <= std::numeric_limits<uint32_t>::max()) {
       _initialize_attribute_vector<uint32_t>(value_segment);
     } else {
-      // TODO: We don't actually need this beacuse we can only have up to std::numeric_limits<uint32_t>::max())
-      // values in a chunk;
+      // I don't think we need this case because a column can only contain up to std::numeric_limits<uint32_t>::max())
+      // values.
       _initialize_attribute_vector<uint64_t>(value_segment);
     }
 
   }
 
+  // Initializes the attribute vector where U is the type of the ValueIDs
   template <typename U>
   void _initialize_attribute_vector(const std::shared_ptr<ValueSegment<T>>& value_segment) {
     std::vector<U> value_ids;
@@ -150,24 +155,11 @@ class DictionarySegment : public BaseSegment {
 
 
     std::transform(value_segment->values().cbegin(), value_segment->values().cend(), std::back_inserter(value_ids),
-        [&](const T& value) { return  _index_of(value); });
+        [&](const T& value) { return  lower_bound(value); });
 
 
     _attribute_vector = std::make_shared<FittedAttributeVector<U>>(std::move(value_ids));
   }
-
-  ValueID _index_of(const T& value) const
-  {
-    // TODO: Test if correct.
-    const auto it = std::lower_bound(_dictionary->cbegin(), _dictionary->cend(), value);
-    if (it == _dictionary->cend()) {
-      return INVALID_VALUE_ID;
-    }
-
-    return ValueID {static_cast<uint32_t>(std::distance(_dictionary->cbegin(), it))};
-  }
-
-
 };
 
 }  // namespace opossum
