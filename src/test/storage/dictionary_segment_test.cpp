@@ -31,27 +31,27 @@
    // Test dictionary size (uniqueness)
    EXPECT_EQ(dict_col->unique_values_count(), 4u);
 
-//   // Test sorting
-//   auto dict = dict_col->dictionary();
-//   EXPECT_EQ((*dict)[0], "Alexander");
-//   EXPECT_EQ((*dict)[1], "Bill");
-//   EXPECT_EQ((*dict)[2], "Hasso");
-//   EXPECT_EQ((*dict)[3], "Steve");
-// }
+   // Test sorting
+   auto dict = dict_col->dictionary();
+   EXPECT_EQ((*dict)[0], "Alexander");
+   EXPECT_EQ((*dict)[1], "Bill");
+   EXPECT_EQ((*dict)[2], "Hasso");
+   EXPECT_EQ((*dict)[3], "Steve");
+ }
 
-// TEST_F(StorageDictionarySegmentTest, LowerUpperBound) {
-//   for (int i = 0; i <= 10; i += 2) vc_int->append(i);
-//   auto col = opossum::make_shared_by_Segment_type<opossum::BaseSegment, opossum::DictionarySegment>("int", vc_int);
-//   auto dict_col = std::dynamic_pointer_cast<opossum::DictionarySegment<int>>(col);
+ TEST_F(StorageDictionarySegmentTest, LowerUpperBound) {
+   for (int i = 0; i <= 10; i += 2) vc_int->append(i);
+   auto col = opossum::make_shared_by_data_type<opossum::BaseSegment, opossum::DictionarySegment>("int", vc_int);
+   auto dict_col = std::dynamic_pointer_cast<opossum::DictionarySegment<int>>(col);
 
-//   EXPECT_EQ(dict_col->lower_bound(4), (opossum::ValueID)2);
-//   EXPECT_EQ(dict_col->upper_bound(4), (opossum::ValueID)3);
+   EXPECT_EQ(dict_col->lower_bound(4), (opossum::ValueID)2);
+   EXPECT_EQ(dict_col->upper_bound(4), (opossum::ValueID)3);
 
-//   EXPECT_EQ(dict_col->lower_bound(5), (opossum::ValueID)3);
-//   EXPECT_EQ(dict_col->upper_bound(5), (opossum::ValueID)3);
+   EXPECT_EQ(dict_col->lower_bound(5), (opossum::ValueID)3);
+   EXPECT_EQ(dict_col->upper_bound(5), (opossum::ValueID)3);
 
-//   EXPECT_EQ(dict_col->lower_bound(15), opossum::INVALID_VALUE_ID);
-//   EXPECT_EQ(dict_col->upper_bound(15), opossum::INVALID_VALUE_ID);
+   EXPECT_EQ(dict_col->lower_bound(15), opossum::INVALID_VALUE_ID);
+   EXPECT_EQ(dict_col->upper_bound(15), opossum::INVALID_VALUE_ID);
  }
 
 // TODO(student): You should add some more tests here (full coverage would be appreciated) and possibly in other files.

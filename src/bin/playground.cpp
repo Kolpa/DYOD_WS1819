@@ -3,6 +3,7 @@
 #include <memory>
 #include <storage/table.hpp>
 #include <storage/fitted_attribute_vector.hpp>
+#include <storage/dictionary_segment.hpp>
 #include "../lib/all_type_variant.hpp"
 #include "storage/value_segment.hpp"
 #include "../lib/utils/assert.hpp"
@@ -20,21 +21,13 @@ int main() {
 //  opossum::FittedAttributeVector<uint64_t> f4;
 //  std::cout << static_cast<uint32_t>(f4.width()) << std::endl;
 
-  std::vector<int> vector;
+  auto int_vs = std::make_shared<opossum::ValueSegment<int>>();
+  int_vs->append(5);
+  int_vs->append(1);
+  int_vs->append(2);
 
-  int32_t x = 5;
-
-  auto iter = vector.cbegin();
-  do{
-    std::cout << "iter: " << (iter.base()) << std::endl;
-    std::cout << "end: " << (vector.cend().base()) << std::endl;
-    if(iter == vector.cend() || x < *iter){
-      iter = vector.insert(iter, x);
-    }
-    ++iter;
-    std::cout << "iter: " << (iter.base()) << std::endl;
-    std::cout << "end: " << (vector.cend().base()) << std::endl;
-  }while(iter != vector.cend());
+  auto ds = std::make_shared<opossum::DictionarySegment<int>>(int_vs);
+  std::cout << ds->lower_bound(1) << std::endl;
 
   return 0;
 }
