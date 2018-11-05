@@ -80,7 +80,7 @@ class DictionarySegment : public BaseSegment {
       return INVALID_VALUE_ID;
     }
 
-    return ValueID {static_cast<uint32_t>(std::distance(_dictionary->cbegin(), it))};
+    return static_cast<ValueID>(std::distance(_dictionary->cbegin(), it));
   }
 
   // same as lower_bound(T), but accepts an AllTypeVariant
@@ -96,7 +96,7 @@ class DictionarySegment : public BaseSegment {
       return INVALID_VALUE_ID;
     }
 
-    return ValueID {static_cast<uint32_t>(std::distance(_dictionary->cbegin(), it))};
+    return static_cast<ValueID>(std::distance(_dictionary->cbegin(), it));
   }
 
   // same as upper_bound(T), but accepts an AllTypeVariant
@@ -123,8 +123,8 @@ class DictionarySegment : public BaseSegment {
     // copy all values to dictionary
     _dictionary = std::make_shared<std::vector<T>>(std::move(value_segment->values()));
     std::sort(_dictionary->begin(), _dictionary->end());
-    auto last = std::unique(_dictionary->begin(), _dictionary->end());
-    _dictionary->erase(last, _dictionary->end());
+    const auto last = std::unique(_dictionary->begin(), _dictionary->end());
+    _dictionary->erase(last, _dictionary->cend());
     // we want to enforce (hopefully) that the dictionary requires less memory than the attribute vector
     _dictionary->shrink_to_fit();
   }

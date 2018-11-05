@@ -21,7 +21,7 @@ class FittedAttributeVector : public BaseAttributeVector {
 
   // returns the value id at a given position
   ValueID get(const size_t i) const {
-    return ValueID{static_cast<uint32_t>(_values[i])};
+    return static_cast<ValueID>(_values[i]);
   }
 
   // sets the value id at a given position
