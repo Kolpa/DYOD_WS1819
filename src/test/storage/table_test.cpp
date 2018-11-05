@@ -178,8 +178,7 @@ TEST_F(StorageTableTest, CompressChunk) {
 
   EXPECT_EQ(t.chunk_count(), 4u);
 
-  const auto& chunk = t.get_chunk(ChunkID{1});
-  auto segment = chunk.get_segment(ColumnID{0});
+  auto segment = t.get_chunk(ChunkID{1}).get_segment(ColumnID{0});
   auto value_segment_ptr = std::dynamic_pointer_cast<ValueSegment<int>>(segment);
   auto dictionary_segment_ptr = std::dynamic_pointer_cast<DictionarySegment<int>>(segment);
   EXPECT_TRUE(value_segment_ptr != nullptr);
@@ -187,7 +186,7 @@ TEST_F(StorageTableTest, CompressChunk) {
 
   t.compress_chunk(ChunkID{1});
 
-  segment = chunk.get_segment(ColumnID{0});
+  segment = t.get_chunk(ChunkID{1}).get_segment(ColumnID{0});
   value_segment_ptr = std::dynamic_pointer_cast<ValueSegment<int>>(segment);
   dictionary_segment_ptr = std::dynamic_pointer_cast<DictionarySegment<int>>(segment);
   EXPECT_TRUE(value_segment_ptr == nullptr);
@@ -197,7 +196,6 @@ TEST_F(StorageTableTest, CompressChunk) {
 
   // Fail because last chunk not full.
   EXPECT_THROW(t.compress_chunk(ChunkID{t.chunk_count() - 1}), std::exception);
-
 }
 
 }  // namespace opossum
