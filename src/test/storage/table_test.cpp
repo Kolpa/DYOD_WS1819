@@ -8,6 +8,7 @@
 #include "gtest/gtest.h"
 
 #include "../lib/resolve_type.hpp"
+#include "../lib/storage/dictionary_segment.hpp"
 #include "../lib/storage/table.hpp"
 #include "../lib/types.hpp"
 
@@ -164,6 +165,38 @@ TEST_F(StorageTableTest, Append) {
   t.append({43, "OD"});
   EXPECT_EQ(t.row_count(), 2u);
   EXPECT_EQ(type_cast<int>((*t.get_chunk(ChunkID{0}).get_segment(ColumnID{0}))[0]), 42);
+}
+
+TEST_F(StorageTableTest, CompressChunk) {
+  t.append({1, "v1"});
+  t.append({2, "v2"});
+  t.append({3, "v3"});
+  t.append({4, "v4"});
+  t.append({5, "v5"});
+  t.append({6, "v6"});
+  t.append({7, "v7"});
+
+  EXPECT_EQ(t.chunk_count(), 4u);
+
+  auto segment = t.get_chunk(ChunkID{1}).get_segment(ColumnID{0});
+  auto value_segment_ptr = std::dynamic_pointer_cast<ValueSegment<int>>(segment);
+  auto dictionary_segment_ptr = std::dynamic_pointer_cast<DictionarySegment<int>>(segment);
+  EXPECT_TRUE(value_segment_ptr != nullptr);
+  EXPECT_TRUE(dictionary_segment_ptr == nullptr);
+
+  t.compress_chunk(ChunkID{1});
+
+  segment = t.get_chunk(ChunkID{1}).get_segment(ColumnID{0});
+  value_segment_ptr = std::dynamic_pointer_cast<ValueSegment<int>>(segment);
+  dictionary_segment_ptr = std::dynamic_pointer_cast<DictionarySegment<int>>(segment);
+  EXPECT_TRUE(value_segment_ptr == nullptr);
+  EXPECT_TRUE(dictionary_segment_ptr != nullptr);
+
+  EXPECT_EQ(t.chunk_count(), 4u);
+
+  // Fail because last chunk not full.
+  EXPECT_THROW(t.compress_chunk(ChunkID{t.chunk_count() - 1}), std::exception);
+
 }
 
 }  // namespace opossum

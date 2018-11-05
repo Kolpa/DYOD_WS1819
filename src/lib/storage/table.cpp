@@ -108,17 +108,17 @@ void Table::compress_chunk(ChunkID chunk_id) {
 
   DebugAssert(_is_full(uncompressed_chunk), "Chunk to compress must be full.");
 
-  Chunk compressed_chunk;
+  auto compressed_chunk = std::make_shared<Chunk>();
   for (ColumnID column_id{0}; column_id < uncompressed_chunk.column_count(); ++column_id) {
     const auto segment = uncompressed_chunk.get_segment(column_id);
-    const auto dictionary_segment =
+    auto dictionary_segment =
         make_shared_by_data_type<BaseSegment, DictionarySegment>(column_type(column_id), segment);
-    compressed_chunk.add_segment(dictionary_segment);
+    compressed_chunk->add_segment(std::move(dictionary_segment));
   }
 
   // Replace uncompressed chunk with dictionary compressed chunk.
   std::lock_guard lock(_chunks_mutex);
-  _chunks[chunk_id] = std::make_shared<Chunk>(std::move(compressed_chunk));
+  _chunks[chunk_id] = std::move(compressed_chunk);
 }
 
 }  // namespace opossum
