@@ -196,7 +196,6 @@ TEST_F(StorageTableTest, CompressChunk) {
 
   // Fail because last chunk not full.
   EXPECT_THROW(t.compress_chunk(ChunkID{t.chunk_count() - 1}), std::exception);
-
 }
 
 }  // namespace opossum
