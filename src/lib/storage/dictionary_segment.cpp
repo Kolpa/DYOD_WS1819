@@ -66,7 +66,7 @@ template <typename T>
 ValueID DictionarySegment<T>::lower_bound(T value) const {
   const auto occurrence_iter = std::lower_bound(_dictionary->cbegin(), _dictionary->cend(), value);
   if (occurrence_iter != _dictionary->cend()) {
-    return ValueID{static_cast<ValueID>(std::distance(_dictionary->cbegin(), occurrence_iter))};
+    return static_cast<ValueID>(std::distance(_dictionary->cbegin(), occurrence_iter));
   }
   return INVALID_VALUE_ID;
 }
