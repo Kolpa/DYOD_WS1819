@@ -38,7 +38,7 @@ FittedAttributeVector<T>::FittedAttributeVector(ChunkOffset size) {
 
 template <class T>
 ValueID FittedAttributeVector<T>::get(const ChunkOffset i) const {
-  return ValueID{static_cast<ValueID>(_value_ids[i])};
+  return static_cast<ValueID>(_value_ids[i]);
 }
 
 template <class T>

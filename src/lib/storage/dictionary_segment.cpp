@@ -15,7 +15,7 @@ namespace opossum {
 // Creates a Dictionary segment from a given value segment.
 template <class T>
 DictionarySegment<T>::DictionarySegment(const std::shared_ptr<BaseSegment>& base_segment) {
-  const auto value_segment = std::dynamic_pointer_cast<ValueSegment<T>>(base_segment);
+  const auto value_segment = std::static_pointer_cast<ValueSegment<T>>(base_segment);
   _init_dictionary(value_segment);
   _init_attribute_vector(value_segment);
 }
@@ -83,7 +83,7 @@ template <typename T>
 ValueID DictionarySegment<T>::upper_bound(T value) const {
   const auto occurrence_iter = std::upper_bound(_dictionary->cbegin(), _dictionary->cend(), value);
   if (occurrence_iter != _dictionary->cend()) {
-    return ValueID{static_cast<ValueID>(std::distance(_dictionary->cbegin(), occurrence_iter))};
+    return static_cast<ValueID>(std::distance(_dictionary->cbegin(), occurrence_iter));
   }
   return INVALID_VALUE_ID;
 }
@@ -126,10 +126,8 @@ void DictionarySegment<T>::_init_attribute_vector(const std::shared_ptr<ValueSeg
 
   ChunkOffset att_vec_index = 0;
   for (const auto& value : value_segment->values()) {
-    const auto occurrence_iter = std::find(_dictionary->cbegin(), _dictionary->cend(), value);
-    DebugAssert(occurrence_iter != _dictionary->cend(), "Value is not available in the dictionary.");
-    uint32_t dict_pos = std::distance(_dictionary->cbegin(), occurrence_iter);
-    _attribute_vector->set(att_vec_index, ValueID{dict_pos});
+    ValueID dict_pos = lower_bound(value);
+    _attribute_vector->set(att_vec_index, dict_pos);
     ++att_vec_index;
   }
 }
