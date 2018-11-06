@@ -86,8 +86,8 @@ class Table : private Noncopyable {
   std::vector<std::string> _column_names;
   std::vector<std::string> _column_types;
 
-  // creates and new chunk and adds it to the table. _current_chunk is updated to point to the
-  // newly created chnunk.
+  // creates a new chunk and adds it to the table. _current_chunk is updated to point to the
+  // newly created chunk.
   void _open_new_chunk();
 
   // returns true if the maximum number of rows in chunk has been reached.

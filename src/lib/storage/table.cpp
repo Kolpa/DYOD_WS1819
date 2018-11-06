@@ -32,7 +32,6 @@ void Table::add_column(const std::string& name, const std::string& type) {
 }
 
 void Table::append(std::vector<AllTypeVariant> values) {
-  // check if chunk is full
   if (_is_full(*_current_chunk)) {
     _open_new_chunk();
   }
