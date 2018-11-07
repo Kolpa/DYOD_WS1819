@@ -32,8 +32,7 @@ std::shared_ptr<Table> StorageManager::get_table(const std::string& name) const 
 }
 
 bool StorageManager::has_table(const std::string& name) const {
-  const auto map_iter = _tables.find(name);
-  return map_iter != _tables.cend();
+  return _tables.find(name) != _tables.cend();
 }
 
 std::vector<std::string> StorageManager::table_names() const {
@@ -45,8 +44,8 @@ std::vector<std::string> StorageManager::table_names() const {
 }
 
 void StorageManager::print(std::ostream& out) const {
-  for (const auto& [tbl_name, table] : _tables) {
-    out << "name[" << tbl_name << "], #columns[" << table->column_count() << "], #rows[" << table->row_count()
+  for (const auto& [table_name, table] : _tables) {
+    out << "name[" << table_name << "], #columns[" << table->column_count() << "], #rows[" << table->row_count()
         << "], #chunks[" << table->chunk_count() << "]" << std::endl;
   }
 }

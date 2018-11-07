@@ -57,9 +57,9 @@ uint64_t Table::row_count() const {
 ChunkID Table::chunk_count() const { return ChunkID{static_cast<uint16_t>(_chunks.size())}; }
 
 ColumnID Table::column_id_by_name(const std::string& column_name) const {
-  const auto column_name_it = std::find(_column_names.cbegin(), _column_names.cend(), column_name);
-  DebugAssert(column_name_it != _column_names.cend(), "A column with the passed column name does not exist.");
-  const uint16_t position = std::distance(_column_names.cbegin(), column_name_it);
+  const auto column_name_iter = std::find(_column_names.cbegin(), _column_names.cend(), column_name);
+  DebugAssert(column_name_iter != _column_names.cend(), "A column with the passed column name does not exist.");
+  const uint16_t position = std::distance(_column_names.cbegin(), column_name_iter);
   return ColumnID(position);
 }
 
