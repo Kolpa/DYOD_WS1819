@@ -1,10 +1,11 @@
 #pragma once
 
+#include <shared_mutex>
+
 #include <limits>
 #include <map>
 #include <memory>
 #include <mutex>
-#include <shared_mutex>
 #include <string>
 #include <utility>
 #include <vector>
@@ -14,7 +15,6 @@
 
 #include "type_cast.hpp"
 #include "types.hpp"
-#include "utils/assert.hpp"
 
 namespace opossum {
 

@@ -1,12 +1,13 @@
 #include "table.hpp"
 
+#include <shared_mutex>
+
 #include <algorithm>
 #include <iomanip>
 #include <limits>
 #include <memory>
 #include <mutex>
 #include <numeric>
-#include <shared_mutex>
 #include <string>
 #include <utility>
 #include <vector>
@@ -16,7 +17,6 @@
 
 #include "resolve_type.hpp"
 #include "types.hpp"
-#include "utils/assert.hpp"
 
 namespace opossum {
 
@@ -55,8 +55,8 @@ void Table::_open_new_chunk() {
 uint16_t Table::column_count() const { return static_cast<uint16_t>(_column_names.size()); }
 
 uint64_t Table::row_count() const {
-  uint64_t rows {0};
-  for(const auto& chunk : _chunks) {
+  uint64_t rows{0};
+  for (const auto& chunk : _chunks) {
     rows += chunk->size();
   }
   return rows;
