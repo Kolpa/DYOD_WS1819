@@ -25,12 +25,12 @@ class FittedAttributeVector : public BaseAttributeVector {
 
   // returns the value id at a given position
   ValueID get(const size_t i) const {
-    return static_cast<ValueID>(_values[i]);
+    return static_cast<ValueID>(_values.at(i));
   }
 
   // sets the value id at a given position
   void set(const size_t i, const ValueID value_id) {
-    _values[i] = static_cast<T>(value_id);
+    _values.at(i) = static_cast<T>(value_id);
   }
 
   // returns the number of values
