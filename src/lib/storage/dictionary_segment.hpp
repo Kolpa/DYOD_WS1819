@@ -13,6 +13,7 @@
 
 #include "all_type_variant.hpp"
 #include "types.hpp"
+#include "type_cast.hpp"
 
 namespace opossum {
 
@@ -54,7 +55,7 @@ class DictionarySegment : public BaseSegment {
 
   // dictionary segments are immutable
   void append(const AllTypeVariant&) {
-    throw std::runtime_error("Dictionary segments are immutable");
+    throw std::runtime_error("Appending value to dictionary segment failed: Dictionary segments are immutable.");
   }
 
   // returns an underlying dictionary
@@ -75,33 +76,31 @@ class DictionarySegment : public BaseSegment {
   // returns the first value ID that refers to a value >= the search value
   // returns INVALID_VALUE_ID if all values are smaller than the search value
   ValueID lower_bound(T value) const {
-    const auto it = std::lower_bound(_dictionary->cbegin(), _dictionary->cend(), value);
-    if (it == _dictionary->cend()) {
+      const auto occurrence_iter = std::lower_bound(_dictionary->cbegin(), _dictionary->cend(), value);
+      if (occurrence_iter != _dictionary->cend()) {
+          return static_cast<ValueID>(std::distance(_dictionary->cbegin(), occurrence_iter));
+      }
       return INVALID_VALUE_ID;
-    }
-
-    return static_cast<ValueID>(std::distance(_dictionary->cbegin(), it));
   }
 
   // same as lower_bound(T), but accepts an AllTypeVariant
   ValueID lower_bound(const AllTypeVariant& value) const {
-    return lower_bound(value);
+    return lower_bound(type_cast<T>(value));
   }
 
   // returns the first value ID that refers to a value > the search value
   // returns INVALID_VALUE_ID if all values are smaller than or equal to the search value
   ValueID upper_bound(T value) const {
-    const auto it = std::upper_bound(_dictionary->cbegin(), _dictionary->cend(), value);
-    if (it == _dictionary->cend()) {
+      const auto occurrence_iter = std::upper_bound(_dictionary->cbegin(), _dictionary->cend(), value);
+      if (occurrence_iter != _dictionary->cend()) {
+          return static_cast<ValueID>(std::distance(_dictionary->cbegin(), occurrence_iter));
+      }
       return INVALID_VALUE_ID;
-    }
-
-    return static_cast<ValueID>(std::distance(_dictionary->cbegin(), it));
   }
 
   // same as upper_bound(T), but accepts an AllTypeVariant
   ValueID upper_bound(const AllTypeVariant& value) const {
-    return upper_bound(value);
+    return upper_bound(type_cast<T>(value));
   }
 
   // return the number of unique_values (dictionary entries)
@@ -123,8 +122,8 @@ class DictionarySegment : public BaseSegment {
     // copy all values to dictionary
     _dictionary = std::make_shared<std::vector<T>>(std::move(value_segment->values()));
     std::sort(_dictionary->begin(), _dictionary->end());
-    const auto last = std::unique(_dictionary->begin(), _dictionary->end());
-    _dictionary->erase(last, _dictionary->cend());
+    const auto begin_erase_iter = std::unique(_dictionary->begin(), _dictionary->end());
+    _dictionary->erase(begin_erase_iter, _dictionary->cend());
     // we want to enforce (hopefully) that the dictionary requires less memory than the attribute vector
     _dictionary->shrink_to_fit();
   }
@@ -147,16 +146,14 @@ class DictionarySegment : public BaseSegment {
 
   }
 
-  // Initializes the attribute vector where U is the type of the ValueIDs
+  // Initializes the attribute vector where U is the type of the value IDs
   template <typename U>
   void _initialize_attribute_vector(const std::shared_ptr<ValueSegment<T>>& value_segment) {
     std::vector<U> value_ids;
     value_ids.reserve(value_segment->size());
 
-
     std::transform(value_segment->values().cbegin(), value_segment->values().cend(), std::back_inserter(value_ids),
         [&](const T& value) { return  lower_bound(value); });
-
 
     _attribute_vector = std::make_shared<FittedAttributeVector<U>>(std::move(value_ids));
   }
