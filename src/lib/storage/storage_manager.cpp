@@ -35,8 +35,7 @@ std::shared_ptr<Table> StorageManager::get_table(const std::string& name) const 
 }
 
 bool StorageManager::has_table(const std::string& name) const {
-  const auto map_iter = _tables.find(name);
-  return map_iter != _tables.cend();
+  return _tables.find(name) != _tables.cend();
 }
 
 std::vector<std::string> StorageManager::table_names() const {

@@ -11,7 +11,7 @@ if [[ "$unamestr" == 'Darwin' ]]; then
 	fi
 	format_cmd="$clang_format -i -style=file '{}'"
 elif [[ "$unamestr" == 'Linux' ]]; then
-	format_cmd="clang-format-6.0 -i -style=file '{}'"
+	format_cmd="clang-format -i -style=file '{}'"
 fi
 
 

@@ -50,6 +50,7 @@ if echo $REPLY | grep -E '^[Yy]$' > /dev/null; then
             exit 1
         fi
     elif [[ "$unamestr" == 'Linux' ]]; then
+    # support for ubuntu distros and some ubuntu based distros
         if ([ -f /etc/lsb-release ] && cat /etc/lsb-release | grep DISTRIB_ID | grep Ubuntu >/dev/null) || ([ -f /etc/upstream-release/lsb-release ] && cat /etc/upstream-release/lsb-release | grep DISTRIB_ID | grep Ubuntu >/dev/null); then
             echo "Installing dependencies (this may take a while)..."
             if sudo apt-get update >/dev/null; then
