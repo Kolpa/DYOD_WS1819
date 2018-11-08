@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <limits>
 #include <memory>
+#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
@@ -25,6 +26,13 @@ class BaseSegment;
 // types (uint8_t, uint16_t) since after a down-cast INVALID_VALUE_ID will look like their numeric_limit::max()
 constexpr ValueID INVALID_VALUE_ID{std::numeric_limits<ValueID::base_type>::max()};
 
+#define _BOUND(BOUND_TYPE) \
+  const auto occurrence_iter = BOUND_TYPE(_dictionary->cbegin(), _dictionary->cend(), value); \
+  if (occurrence_iter != _dictionary->cend()) {                                               \
+    return static_cast<ValueID>(std::distance(_dictionary->cbegin(), occurrence_iter));       \
+  }                                                                                           \
+  return INVALID_VALUE_ID;
+
 // Dictionary is a specific segment type that stores all its values in a vector
 template<typename T>
 class DictionarySegment : public BaseSegment {
@@ -35,6 +43,8 @@ class DictionarySegment : public BaseSegment {
   explicit DictionarySegment(const std::shared_ptr<BaseSegment>& base_segment) {
     // We imply that BaseSegment will always be a value segment.
     // If not the code should fail in the next line.
+    DebugAssert(std::dynamic_pointer_cast<ValueSegment<T>>(base_segment) != nullptr,
+        "base_segment must be of type ValueSegment");
     const auto value_segment = std::static_pointer_cast<ValueSegment<T>>(base_segment);
     _initialize_dictionary(value_segment);
     _initialize_attribute_vector(value_segment);
@@ -70,17 +80,13 @@ class DictionarySegment : public BaseSegment {
 
   // return the value represented by a given ValueID
   const T& value_by_value_id(ValueID value_id) const {
-    return _dictionary[value_id];
+    return _dictionary->at(value_id);
   }
 
   // returns the first value ID that refers to a value >= the search value
   // returns INVALID_VALUE_ID if all values are smaller than the search value
   ValueID lower_bound(T value) const {
-      const auto occurrence_iter = std::lower_bound(_dictionary->cbegin(), _dictionary->cend(), value);
-      if (occurrence_iter != _dictionary->cend()) {
-          return static_cast<ValueID>(std::distance(_dictionary->cbegin(), occurrence_iter));
-      }
-      return INVALID_VALUE_ID;
+    _BOUND(std::lower_bound)
   }
 
   // same as lower_bound(T), but accepts an AllTypeVariant
@@ -91,11 +97,7 @@ class DictionarySegment : public BaseSegment {
   // returns the first value ID that refers to a value > the search value
   // returns INVALID_VALUE_ID if all values are smaller than or equal to the search value
   ValueID upper_bound(T value) const {
-      const auto occurrence_iter = std::upper_bound(_dictionary->cbegin(), _dictionary->cend(), value);
-      if (occurrence_iter != _dictionary->cend()) {
-          return static_cast<ValueID>(std::distance(_dictionary->cbegin(), occurrence_iter));
-      }
-      return INVALID_VALUE_ID;
+    _BOUND(std::upper_bound)
   }
 
   // same as upper_bound(T), but accepts an AllTypeVariant
@@ -120,7 +122,7 @@ class DictionarySegment : public BaseSegment {
   // initializes the dictionary using the value segment
   void _initialize_dictionary(const std::shared_ptr<ValueSegment<T>>& value_segment) {
     // copy all values to dictionary
-    _dictionary = std::make_shared<std::vector<T>>(std::move(value_segment->values()));
+    _dictionary = std::make_shared<std::vector<T>>(value_segment->values());
     std::sort(_dictionary->begin(), _dictionary->end());
     const auto begin_erase_iter = std::unique(_dictionary->begin(), _dictionary->end());
     _dictionary->erase(begin_erase_iter, _dictionary->cend());
@@ -139,9 +141,7 @@ class DictionarySegment : public BaseSegment {
     } else if (unique_values_count() <= std::numeric_limits<uint32_t>::max()) {
       _initialize_attribute_vector<uint32_t>(value_segment);
     } else {
-      // I don't think we need this case because a column can only contain up to std::numeric_limits<uint32_t>::max())
-      // values.
-      _initialize_attribute_vector<uint64_t>(value_segment);
+      throw std::runtime_error("Not implemented attribute vector size.");
     }
 
   }
@@ -156,6 +156,7 @@ class DictionarySegment : public BaseSegment {
         [&](const T& value) { return  lower_bound(value); });
 
     _attribute_vector = std::make_shared<FittedAttributeVector<U>>(std::move(value_ids));
+    DebugAssert(value_ids.empty(), "value_ids should be moved");
   }
 };
 

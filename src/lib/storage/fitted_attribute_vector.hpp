@@ -13,7 +13,7 @@ template <typename T>
 class FittedAttributeVector : public BaseAttributeVector {
  public:
 
-  explicit FittedAttributeVector(std::vector<T>&& values)  : _values{values} {
+  explicit FittedAttributeVector(std::vector<T>&& values)  : _values{std::move(values)} {
     bool valid_type = std::is_same_v<T, uint8_t> || std::is_same_v<T, uint16_t> || std::is_same_v<T, uint32_t>;
     Assert(valid_type, "Template type has to be uint8_t, uint16_t or uint32_t");
   }
