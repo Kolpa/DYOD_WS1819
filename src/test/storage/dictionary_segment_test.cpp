@@ -1,6 +1,7 @@
 #include <memory>
 #include <string>
 
+#include "../lib/type_cast.hpp"
 #include "gtest/gtest.h"
 
 #include "../../lib/resolve_type.hpp"
@@ -52,6 +53,23 @@ TEST_F(StorageDictionarySegmentTest, LowerUpperBound) {
 
   EXPECT_EQ(dict_col->lower_bound(15), opossum::INVALID_VALUE_ID);
   EXPECT_EQ(dict_col->upper_bound(15), opossum::INVALID_VALUE_ID);
+}
+
+TEST_F(StorageDictionarySegmentTest, DictionarySegmentAccess) {
+  vc_int->append(10);
+  vc_int->append(50);
+  auto col = opossum::make_shared_by_data_type<opossum::BaseSegment, opossum::DictionarySegment>("int", vc_int);
+  auto dict_col = std::dynamic_pointer_cast<opossum::DictionarySegment<int>>(col);
+
+  EXPECT_EQ(dict_col->get(0), 10);
+  EXPECT_EQ(opossum::type_cast<int>(dict_col->operator[](1)), 50);
+}
+
+TEST_F(StorageDictionarySegmentTest, DictionarySegmentIsImmutable) {
+  auto col = opossum::make_shared_by_data_type<opossum::BaseSegment, opossum::DictionarySegment>("int", vc_int);
+  auto dict_col = std::dynamic_pointer_cast<opossum::DictionarySegment<int>>(col);
+
+  EXPECT_THROW(dict_col->append({}), std::runtime_error);
 }
 
 // TODO(student): You should add some more tests here (full coverage would be appreciated) and possibly in other files.
