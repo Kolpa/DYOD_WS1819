@@ -1,4 +1,6 @@
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "../base_test.hpp"
 #include "gtest/gtest.h"
@@ -68,7 +70,10 @@ TEST_F(StorageStorageManagerTest, TablePrintIsCorrect) {
   auto& sm = StorageManager::get();
   std::stringstream stream;
   sm.print(stream);
-  EXPECT_EQ(stream.str(), "name[first_table], #columns[0], #rows[0], #chunks[1]\nname[second_table], #columns[0], #rows[0], #chunks[1]\n");
+  EXPECT_EQ(stream.str(),
+  R"(name[first_table], #columns[0], #rows[0], #chunks[1]
+name[second_table], #columns[0], #rows[0], #chunks[1]
+)");
 }
 
 }  // namespace opossum

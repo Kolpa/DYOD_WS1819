@@ -1,5 +1,7 @@
 #include <memory>
 #include <string>
+#include <vector>
+#include <utility>
 
 #include "../base_test.hpp"
 #include "gtest/gtest.h"
@@ -11,7 +13,7 @@ namespace opossum {
 class FittedAttributeVectorTest : public BaseTest {
  protected:
   void SetUp() override {
-    std::vector<uint8_t> base_data = {1,2,3,4,5,6,7,8,9,10};
+    std::vector<uint8_t> base_data = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
     attr_vect = std::make_shared<FittedAttributeVector<uint8_t>>(std::move(base_data));
   }
   std::shared_ptr<FittedAttributeVector<uint8_t>> attr_vect = nullptr;
