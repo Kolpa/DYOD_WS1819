@@ -70,10 +70,10 @@ TEST_F(StorageStorageManagerTest, TablePrintIsCorrect) {
   auto& sm = StorageManager::get();
   std::stringstream stream;
   sm.print(stream);
-  EXPECT_EQ(stream.str(),
-  R"(name[first_table], #columns[0], #rows[0], #chunks[1]
-name[second_table], #columns[0], #rows[0], #chunks[1]
-)");
+  const auto expected_output =
+      "name[first_table], #columns[0], #rows[0], #chunks[1]\n"
+      "name[second_table], #columns[0], #rows[0], #chunks[1]\n";
+  EXPECT_EQ(stream.str(), expected_output);
 }
 
 }  // namespace opossum
