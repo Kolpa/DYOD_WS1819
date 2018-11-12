@@ -5,10 +5,11 @@ jobs:
       - image: ubuntu:bionic
     steps:
       - run:
-        name: install deps 
-        command: |
-          boostall=$(apt-cache search --names-only '^libboost1.[0-9]+-all-dev$' | sort | tail -n 1 | cut -f1 -d' ')
-          sudo apt-get install --no-install-recommends -y gcovr python2.7 gcc-7 build-essential cmake parallel $boostall
+          name: install deps
+          command: |
+            apt-get update
+            boostall=$(apt-cache search --names-only '^libboost1.[0-9]+-all-dev$' | sort | tail -n 1 | cut -f1 -d' ')
+            apt-get install --no-install-recommends -y gcovr python2.7 gcc-7 build-essential cmake parallel $boostall
       - checkout
       - run:
           name: prepare build
@@ -18,4 +19,6 @@ jobs:
             cmake ..
       - run:
           name: run build
-          command: make
+          command: |
+            cd build
+            make
