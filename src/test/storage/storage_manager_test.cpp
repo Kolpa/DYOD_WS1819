@@ -1,4 +1,6 @@
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "../base_test.hpp"
 #include "gtest/gtest.h"
@@ -48,6 +50,30 @@ TEST_F(StorageStorageManagerTest, DoesNotHaveTable) {
 TEST_F(StorageStorageManagerTest, HasTable) {
   auto& sm = StorageManager::get();
   EXPECT_EQ(sm.has_table("first_table"), true);
+}
+
+TEST_F(StorageStorageManagerTest, CannotAssignSameTable) {
+  auto& sm = StorageManager::get();
+  auto t1 = std::make_shared<Table>();
+  sm.add_table("same_table", t1);
+  EXPECT_THROW(sm.add_table("same_table", t1), std::runtime_error);
+}
+
+TEST_F(StorageStorageManagerTest, TablesNamesIsCorrect) {
+  auto& sm = StorageManager::get();
+  std::vector<std::string> table_names = sm.table_names();
+  EXPECT_EQ(table_names.at(0), "first_table");
+  EXPECT_EQ(table_names.at(1), "second_table");
+}
+
+TEST_F(StorageStorageManagerTest, TablePrintIsCorrect) {
+  auto& sm = StorageManager::get();
+  std::stringstream stream;
+  sm.print(stream);
+  const auto expected_output =
+      "name[first_table], #columns[0], #rows[0], #chunks[1]\n"
+      "name[second_table], #columns[0], #rows[0], #chunks[1]\n";
+  EXPECT_EQ(stream.str(), expected_output);
 }
 
 }  // namespace opossum
