@@ -95,11 +95,14 @@ void Table::emplace_chunk(Chunk chunk) {
 }
 
 Chunk& Table::get_chunk(ChunkID chunk_id) {
+  return const_cast<Chunk&>(const_cast<const Table&>(*this).get_chunk(chunk_id));
+}
+
+const Chunk& Table::get_chunk(ChunkID chunk_id) const {
+  Assert(chunk_id < _chunks.size(), "Chunk id is out of bound.");
   std::shared_lock lock(_chunks_mutex);
   return *_chunks[chunk_id];
 }
-
-const Chunk& Table::get_chunk(ChunkID chunk_id) const { return get_chunk(chunk_id); }
 
 // compresses the chunk compressing the value_segments to dictionary_segments.
 // The chunk to be compressed must be full.
@@ -111,8 +114,7 @@ void Table::compress_chunk(ChunkID chunk_id) {
   auto compressed_chunk = std::make_shared<Chunk>();
   for (ColumnID column_id{0}; column_id < uncompressed_chunk.column_count(); ++column_id) {
     const auto segment = uncompressed_chunk.get_segment(column_id);
-    auto dictionary_segment =
-        make_shared_by_data_type<BaseSegment, DictionarySegment>(column_type(column_id), segment);
+    auto dictionary_segment = make_shared_by_data_type<BaseSegment, DictionarySegment>(column_type(column_id), segment);
     compressed_chunk->add_segment(std::move(dictionary_segment));
   }
 

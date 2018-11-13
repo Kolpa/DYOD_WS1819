@@ -44,12 +44,14 @@ TEST_F(StorageTableTest, ChunkCount) {
 
 TEST_F(StorageTableTest, GetChunk) {
   t.get_chunk(ChunkID{0});
-  // TODO(anyone): Do we want checks here?
-  // EXPECT_THROW(t.get_chunk(ChunkID{q}), std::exception);
+  EXPECT_THROW(t.get_chunk(ChunkID{5}), std::logic_error);
   t.append({4, "Hello,"});
   t.append({6, "world"});
   t.append({3, "!"});
   t.get_chunk(ChunkID{1});
+
+  const Table t2{2};
+  EXPECT_EQ(t2.get_chunk(ChunkID{0}).size(), 0u);
 }
 
 TEST_F(StorageTableTest, EmplaceChunkOnNonEmptyTable) {

@@ -25,7 +25,7 @@ class BaseSegment;
 constexpr ValueID INVALID_VALUE_ID{std::numeric_limits<ValueID::base_type>::max()};
 
 // Dictionary is a specific segment type that stores all its values in a vector
-template<typename T>
+template <typename T>
 class DictionarySegment : public BaseSegment {
  public:
   /**
@@ -43,34 +43,22 @@ class DictionarySegment : public BaseSegment {
   // the DictionarySegment in this file. Replace the method signatures with actual implementations.
 
   // return the value at a certain position. If you want to write efficient operators, back off!
-  const AllTypeVariant operator[](const size_t i) const {
-    return get(i);
-  }
+  const AllTypeVariant operator[](const size_t i) const { return get(i); }
 
   // return the value at a certain position.
-  const T get(const size_t i) const {
-    return _dictionary->at(_attribute_vector->get(i));
-  }
+  const T get(const size_t i) const { return _dictionary->at(_attribute_vector->get(i)); }
 
   // dictionary segments are immutable
-  void append(const AllTypeVariant&) {
-    throw std::runtime_error("Dictionary segments are immutable");
-  }
+  void append(const AllTypeVariant&) { throw std::runtime_error("Dictionary segments are immutable"); }
 
   // returns an underlying dictionary
-  std::shared_ptr<const std::vector<T>> dictionary() const {
-    return _dictionary;
-  }
+  std::shared_ptr<const std::vector<T>> dictionary() const { return _dictionary; }
 
   // returns an underlying data structure
-  std::shared_ptr<const BaseAttributeVector> attribute_vector() const {
-    return _attribute_vector;
-  }
+  std::shared_ptr<const BaseAttributeVector> attribute_vector() const { return _attribute_vector; }
 
   // return the value represented by a given ValueID
-  const T& value_by_value_id(ValueID value_id) const {
-    return _dictionary[value_id];
-  }
+  const T& value_by_value_id(ValueID value_id) const { return _dictionary[value_id]; }
 
   // returns the first value ID that refers to a value >= the search value
   // returns INVALID_VALUE_ID if all values are smaller than the search value
@@ -84,9 +72,7 @@ class DictionarySegment : public BaseSegment {
   }
 
   // same as lower_bound(T), but accepts an AllTypeVariant
-  ValueID lower_bound(const AllTypeVariant& value) const {
-    return lower_bound(value);
-  }
+  ValueID lower_bound(const AllTypeVariant& value) const { return lower_bound(value); }
 
   // returns the first value ID that refers to a value > the search value
   // returns INVALID_VALUE_ID if all values are smaller than or equal to the search value
@@ -100,19 +86,13 @@ class DictionarySegment : public BaseSegment {
   }
 
   // same as upper_bound(T), but accepts an AllTypeVariant
-  ValueID upper_bound(const AllTypeVariant& value) const {
-    return upper_bound(value);
-  }
+  ValueID upper_bound(const AllTypeVariant& value) const { return upper_bound(value); }
 
   // return the number of unique_values (dictionary entries)
-  size_t unique_values_count() const {
-    return _dictionary->size();
-  }
+  size_t unique_values_count() const { return _dictionary->size(); }
 
   // return the number of entries
-  size_t size() const {
-    return _attribute_vector->size();
-  }
+  size_t size() const { return _attribute_vector->size(); }
 
  protected:
   std::shared_ptr<std::vector<T>> _dictionary;
@@ -132,19 +112,13 @@ class DictionarySegment : public BaseSegment {
   // initializes the attribute vector using the current dictionary.
   // must be called after initialize_dictionary
   void _initialize_attribute_vector(const std::shared_ptr<ValueSegment<T>>& value_segment) {
-
     if (unique_values_count() <= std::numeric_limits<uint8_t>::max()) {
       _initialize_attribute_vector<uint8_t>(value_segment);
     } else if (unique_values_count() <= std::numeric_limits<uint16_t>::max()) {
       _initialize_attribute_vector<uint16_t>(value_segment);
     } else if (unique_values_count() <= std::numeric_limits<uint32_t>::max()) {
       _initialize_attribute_vector<uint32_t>(value_segment);
-    } else {
-      // I don't think we need this case because a column can only contain up to std::numeric_limits<uint32_t>::max())
-      // values.
-      _initialize_attribute_vector<uint64_t>(value_segment);
     }
-
   }
 
   // Initializes the attribute vector where U is the type of the ValueIDs
@@ -153,10 +127,8 @@ class DictionarySegment : public BaseSegment {
     std::vector<U> value_ids;
     value_ids.reserve(value_segment->size());
 
-
     std::transform(value_segment->values().cbegin(), value_segment->values().cend(), std::back_inserter(value_ids),
-        [&](const T& value) { return  lower_bound(value); });
-
+                   [&](const T& value) { return lower_bound(value); });
 
     _attribute_vector = std::make_shared<FittedAttributeVector<U>>(std::move(value_ids));
   }
