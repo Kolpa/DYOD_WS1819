@@ -12,7 +12,6 @@
 #include "../base_test.hpp"
 
 class StorageDictionarySegmentTest : public opossum::BaseTest {
-
  protected:
   std::shared_ptr<opossum::ValueSegment<int>> vc_int = std::make_shared<opossum::ValueSegment<int>>();
   std::shared_ptr<opossum::ValueSegment<std::string>> vc_str = std::make_shared<opossum::ValueSegment<std::string>>();
@@ -47,6 +46,7 @@ TEST_F(StorageDictionarySegmentTest, LowerUpperBound) {
   for (int i = 0; i <= 10; i += 2) {
     vc_int->append(i);
   }
+  
   auto col = opossum::make_shared_by_data_type<opossum::BaseSegment, opossum::DictionarySegment>("int", vc_int);
   auto dict_col = std::dynamic_pointer_cast<opossum::DictionarySegment<int>>(col);
 

@@ -75,5 +75,5 @@ TEST_F(StorageStorageManagerTest, TablePrintIsCorrect) {
       "name[second_table], #columns[0], #rows[0], #chunks[1]\n";
   EXPECT_EQ(stream.str(), expected_output);
 }
-
+  
 }  // namespace opossum
