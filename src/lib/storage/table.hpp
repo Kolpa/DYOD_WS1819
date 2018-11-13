@@ -1,5 +1,7 @@
 #pragma once
 
+#include <shared_mutex>
+
 #include <limits>
 #include <map>
 #include <memory>
@@ -13,7 +15,6 @@
 
 #include "type_cast.hpp"
 #include "types.hpp"
-#include "utils/assert.hpp"
 
 namespace opossum {
 
@@ -85,6 +86,7 @@ class Table : private Noncopyable {
   std::vector<std::shared_ptr<Chunk>> _chunks;
   std::vector<std::string> _column_names;
   std::vector<std::string> _column_types;
+  mutable std::shared_mutex _chunks_mutex;
 
   // creates a new chunk and adds it to the table. _current_chunk is updated to point to the
   // newly created chunk.

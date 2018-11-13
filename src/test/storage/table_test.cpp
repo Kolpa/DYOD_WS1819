@@ -8,6 +8,7 @@
 #include "gtest/gtest.h"
 
 #include "../lib/resolve_type.hpp"
+#include "../lib/storage/dictionary_segment.hpp"
 #include "../lib/storage/table.hpp"
 #include "../lib/types.hpp"
 
@@ -43,12 +44,14 @@ TEST_F(StorageTableTest, ChunkCount) {
 
 TEST_F(StorageTableTest, GetChunk) {
   t.get_chunk(ChunkID{0});
-  // TODO(anyone): Do we want checks here?
-  // EXPECT_THROW(t.get_chunk(ChunkID{q}), std::exception);
+  EXPECT_THROW(t.get_chunk(ChunkID{5}), std::logic_error);
   t.append({4, "Hello,"});
   t.append({6, "world"});
   t.append({3, "!"});
   t.get_chunk(ChunkID{1});
+
+  const Table t2{2};
+  EXPECT_EQ(t2.get_chunk(ChunkID{0}).size(), 0u);
 }
 
 TEST_F(StorageTableTest, EmplaceChunkOnNonEmptyTable) {
@@ -72,6 +75,15 @@ TEST_F(StorageTableTest, EmplaceChunkOnNonEmptyTable) {
   t.append({3, "DYOD"});
   t.append({4, "DYOD"});
   EXPECT_EQ(t.chunk_count(), 2u);
+
+  EXPECT_EQ(type_cast<int>(t.get_chunk(static_cast<ChunkID>(0)).get_segment(static_cast<ColumnID>(0))->operator[](0)),
+            1);
+  EXPECT_EQ(type_cast<int>(t.get_chunk(static_cast<ChunkID>(0)).get_segment(static_cast<ColumnID>(0))->operator[](1)),
+            2);
+  EXPECT_EQ(type_cast<int>(t.get_chunk(static_cast<ChunkID>(1)).get_segment(static_cast<ColumnID>(0))->operator[](0)),
+            3);
+  EXPECT_EQ(type_cast<int>(t.get_chunk(static_cast<ChunkID>(1)).get_segment(static_cast<ColumnID>(0))->operator[](1)),
+            4);
 
   c.add_segment(make_shared_by_data_type<BaseSegment, ValueSegment>("int"));
   // fail, because chunk has wrong number of segments
@@ -164,6 +176,37 @@ TEST_F(StorageTableTest, Append) {
   t.append({43, "OD"});
   EXPECT_EQ(t.row_count(), 2u);
   EXPECT_EQ(type_cast<int>((*t.get_chunk(ChunkID{0}).get_segment(ColumnID{0}))[0]), 42);
+}
+
+TEST_F(StorageTableTest, CompressChunk) {
+  t.append({1, "v1"});
+  t.append({2, "v2"});
+  t.append({3, "v3"});
+  t.append({4, "v4"});
+  t.append({5, "v5"});
+  t.append({6, "v6"});
+  t.append({7, "v7"});
+
+  EXPECT_EQ(t.chunk_count(), 4u);
+
+  auto segment = t.get_chunk(ChunkID{1}).get_segment(ColumnID{0});
+  auto value_segment_ptr = std::dynamic_pointer_cast<ValueSegment<int>>(segment);
+  auto dictionary_segment_ptr = std::dynamic_pointer_cast<DictionarySegment<int>>(segment);
+  EXPECT_TRUE(value_segment_ptr != nullptr);
+  EXPECT_TRUE(dictionary_segment_ptr == nullptr);
+
+  t.compress_chunk(ChunkID{1});
+
+  segment = t.get_chunk(ChunkID{1}).get_segment(ColumnID{0});
+  value_segment_ptr = std::dynamic_pointer_cast<ValueSegment<int>>(segment);
+  dictionary_segment_ptr = std::dynamic_pointer_cast<DictionarySegment<int>>(segment);
+  EXPECT_TRUE(value_segment_ptr == nullptr);
+  EXPECT_TRUE(dictionary_segment_ptr != nullptr);
+
+  EXPECT_EQ(t.chunk_count(), 4u);
+
+  // Fail because last chunk not full.
+  EXPECT_THROW(t.compress_chunk(ChunkID{t.chunk_count() - 1}), std::exception);
 }
 
 }  // namespace opossum
