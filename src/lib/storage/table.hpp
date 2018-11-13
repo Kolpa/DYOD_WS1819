@@ -1,10 +1,11 @@
 #pragma once
 
+#include <shared_mutex>
+
 #include <limits>
 #include <map>
 #include <memory>
 #include <mutex>
-#include <shared_mutex>
 #include <string>
 #include <utility>
 #include <vector>
@@ -14,7 +15,6 @@
 
 #include "type_cast.hpp"
 #include "types.hpp"
-#include "utils/assert.hpp"
 
 namespace opossum {
 
@@ -88,8 +88,8 @@ class Table : private Noncopyable {
   std::vector<std::string> _column_types;
   mutable std::shared_mutex _chunks_mutex;
 
-  // creates and new chunk and adds it to the table. _current_chunk is updated to point to the
-  // newly created chnunk.
+  // creates a new chunk and adds it to the table. _current_chunk is updated to point to the
+  // newly created chunk.
   void _open_new_chunk();
 
   // returns true if the maximum number of rows in chunk has been reached.

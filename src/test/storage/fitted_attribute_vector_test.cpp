@@ -32,4 +32,5 @@ TEST_F(FittedAttributeVectorTest, Set) {
 
 TEST_F(FittedAttributeVectorTest, Size) { EXPECT_EQ(fitted_att_vec->size(), 3u); }
 
-TEST_F(FittedAttributeVectorTest, Width) { EXPECT_EQ(fitted_att_vec->width(), opossum::AttributeVectorWidth{1}); }
+TEST_F(FittedAttributeVectorTest, Width) { EXPECT_EQ(fitted_att_vec->width(), opossum::AttributeVectorWidth{sizeof(uint8_t)}); }
+

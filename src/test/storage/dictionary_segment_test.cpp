@@ -2,6 +2,7 @@
 #include <memory>
 #include <string>
 
+#include "../lib/type_cast.hpp"
 #include "gtest/gtest.h"
 
 #include "../../lib/resolve_type.hpp"
@@ -11,6 +12,7 @@
 #include "../base_test.hpp"
 
 class StorageDictionarySegmentTest : public opossum::BaseTest {
+
  protected:
   std::shared_ptr<opossum::ValueSegment<int>> vc_int = std::make_shared<opossum::ValueSegment<int>>();
   std::shared_ptr<opossum::ValueSegment<std::string>> vc_str = std::make_shared<opossum::ValueSegment<std::string>>();
@@ -88,4 +90,21 @@ TEST_F(StorageDictionarySegmentTest, InitUint32) {
     vc_int->append(i);
   }
   auto col = opossum::make_shared_by_data_type<opossum::BaseSegment, opossum::DictionarySegment>("int", vc_int);
+}
+
+TEST_F(StorageDictionarySegmentTest, DictionarySegmentAccess) {
+  vc_int->append(10);
+  vc_int->append(50);
+  auto col = opossum::make_shared_by_data_type<opossum::BaseSegment, opossum::DictionarySegment>("int", vc_int);
+  auto dict_col = std::dynamic_pointer_cast<opossum::DictionarySegment<int>>(col);
+
+  EXPECT_EQ(dict_col->get(0), 10);
+  EXPECT_EQ(opossum::type_cast<int>(dict_col->operator[](1)), 50);
+}
+
+TEST_F(StorageDictionarySegmentTest, DictionarySegmentIsImmutable) {
+  auto col = opossum::make_shared_by_data_type<opossum::BaseSegment, opossum::DictionarySegment>("int", vc_int);
+  auto dict_col = std::dynamic_pointer_cast<opossum::DictionarySegment<int>>(col);
+
+  EXPECT_THROW(dict_col->append({}), std::runtime_error);
 }

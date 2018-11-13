@@ -13,6 +13,7 @@ set(
     lib/load_table_test.cpp
     storage/chunk_test.cpp
     storage/dictionary_segment_test.cpp
+    storage/fitted_attribute_vector_test.cpp
     storage/storage_manager_test.cpp
     storage/table_test.cpp
     storage/value_segment_test.cpp
@@ -48,7 +49,7 @@ add_executable(hyriseTest ${HYRISE_TEST_SOURCES})
 target_link_libraries(hyriseTest hyrise ${LIBRARIES})
 
 # Configure hyriseCoverageApp
-add_executable(hyriseCoverage EXCLUDE_FROM_ALL ${HYRISE_TEST_SOURCES} storage/fitted_attribute_vector_test.cpp lib/performance_warning_test.cpp lib/performance_warning_test.h)
+add_executable(hyriseCoverage EXCLUDE_FROM_ALL ${HYRISE_TEST_SOURCES})
 target_link_libraries(hyriseCoverage hyriseCoverageLib ${LIBRARIES} --coverage)
 set_target_properties(hyriseCoverage PROPERTIES COMPILE_FLAGS "-fprofile-arcs -ftest-coverage")
 

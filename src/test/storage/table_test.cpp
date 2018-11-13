@@ -76,6 +76,15 @@ TEST_F(StorageTableTest, EmplaceChunkOnNonEmptyTable) {
   t.append({4, "DYOD"});
   EXPECT_EQ(t.chunk_count(), 2u);
 
+  EXPECT_EQ(type_cast<int>(t.get_chunk(static_cast<ChunkID>(0)).get_segment(static_cast<ColumnID>(0))->operator[](0)),
+            1);
+  EXPECT_EQ(type_cast<int>(t.get_chunk(static_cast<ChunkID>(0)).get_segment(static_cast<ColumnID>(0))->operator[](1)),
+            2);
+  EXPECT_EQ(type_cast<int>(t.get_chunk(static_cast<ChunkID>(1)).get_segment(static_cast<ColumnID>(0))->operator[](0)),
+            3);
+  EXPECT_EQ(type_cast<int>(t.get_chunk(static_cast<ChunkID>(1)).get_segment(static_cast<ColumnID>(0))->operator[](1)),
+            4);
+
   c.add_segment(make_shared_by_data_type<BaseSegment, ValueSegment>("int"));
   // fail, because chunk has wrong number of segments
   EXPECT_THROW(t.emplace_chunk(std::move(c)), std::exception);
