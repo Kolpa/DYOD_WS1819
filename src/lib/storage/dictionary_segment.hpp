@@ -78,14 +78,14 @@ class DictionarySegment : public BaseSegment {
   ValueID lower_bound(T value) const {_BOUND(std::lower_bound)}
 
   // same as lower_bound(T), but accepts an AllTypeVariant
-  ValueID lower_bound(const AllTypeVariant& value) const { return lower_bound(value); }
+  ValueID lower_bound(const AllTypeVariant& value) const { return lower_bound(type_cast<T>(value)); }
 
   // returns the first value ID that refers to a value > the search value
   // returns INVALID_VALUE_ID if all values are smaller than or equal to the search value
   ValueID upper_bound(T value) const {_BOUND(std::upper_bound)}
 
   // same as upper_bound(T), but accepts an AllTypeVariant
-  ValueID upper_bound(const AllTypeVariant& value) const { return upper_bound(value); }
+  ValueID upper_bound(const AllTypeVariant& value) const { return upper_bound(type_cast<T>(value)); }
 
   // return the number of unique_values (dictionary entries)
   size_t unique_values_count() const { return _dictionary->size(); }
