@@ -13,7 +13,6 @@ namespace opossum {
 template <typename T>
 class FittedAttributeVector : public BaseAttributeVector {
  public:
-
   explicit FittedAttributeVector(std::vector<T>&& values) : _values{std::move(values)} {
     bool valid_type = std::is_same_v<T, uint8_t> || std::is_same_v<T, uint16_t> || std::is_same_v<T, uint32_t>;
     Assert(valid_type, "Template type has to be uint8_t, uint16_t or uint32_t");
@@ -25,10 +24,7 @@ class FittedAttributeVector : public BaseAttributeVector {
   FittedAttributeVector& operator=(FittedAttributeVector&&) = default;
 
   // returns the value id at a given position
-  ValueID get(const size_t i) const {
-    Assert(i < _values.size(), "Index is out of attribute vector bound.");
-    return static_cast<ValueID>(_values[i]);
-  }
+  ValueID get(const size_t i) const { return static_cast<ValueID>(_values.at(i)); }
 
   // sets the value id at a given position
   void set(const size_t i, const ValueID value_id) {

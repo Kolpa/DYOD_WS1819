@@ -46,7 +46,7 @@ TEST_F(StorageDictionarySegmentTest, LowerUpperBound) {
   for (int i = 0; i <= 10; i += 2) {
     vc_int->append(i);
   }
-  
+
   auto col = opossum::make_shared_by_data_type<opossum::BaseSegment, opossum::DictionarySegment>("int", vc_int);
   auto dict_col = std::dynamic_pointer_cast<opossum::DictionarySegment<int>>(col);
 
@@ -77,25 +77,22 @@ TEST_F(StorageDictionarySegmentTest, GetValue) {
   EXPECT_EQ(dict_col->operator[](1), opossum::AllTypeVariant(2));
 }
 
-TEST_F(StorageDictionarySegmentTest, Append) {
-  auto col = opossum::make_shared_by_data_type<opossum::BaseSegment, opossum::DictionarySegment>("int", vc_int);
-  auto dict_col = std::dynamic_pointer_cast<opossum::DictionarySegment<int>>(col);
-
-  EXPECT_THROW(dict_col->append(12), std::runtime_error);
-}
-
 TEST_F(StorageDictionarySegmentTest, InitUint16) {
   for (int i = 0; i < std::numeric_limits<uint8_t>::max() + 1; ++i) {
     vc_int->append(i);
   }
-  auto col = opossum::make_shared_by_data_type<opossum::BaseSegment, opossum::DictionarySegment>("int", vc_int);
+  const auto col = opossum::make_shared_by_data_type<opossum::BaseSegment, opossum::DictionarySegment>("int", vc_int);
+  const auto dict_col = std::static_pointer_cast<opossum::DictionarySegment<uint16_t>>(col);
+  EXPECT_EQ(dict_col->attribute_vector()->width(), 2);
 }
 
 TEST_F(StorageDictionarySegmentTest, InitUint32) {
   for (int i = 0; i < std::numeric_limits<uint16_t>::max() + 1; ++i) {
     vc_int->append(i);
   }
-  auto col = opossum::make_shared_by_data_type<opossum::BaseSegment, opossum::DictionarySegment>("int", vc_int);
+  const auto col = opossum::make_shared_by_data_type<opossum::BaseSegment, opossum::DictionarySegment>("int", vc_int);
+  const auto dict_col = std::static_pointer_cast<opossum::DictionarySegment<uint32_t>>(col);
+  EXPECT_EQ(dict_col->attribute_vector()->width(), 4);
 }
 
 TEST_F(StorageDictionarySegmentTest, DictionarySegmentAccess) {

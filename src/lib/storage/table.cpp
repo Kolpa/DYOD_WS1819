@@ -98,13 +98,13 @@ void Table::emplace_chunk(Chunk chunk) {
 }
 
 Chunk& Table::get_chunk(ChunkID chunk_id) {
-  return const_cast<Chunk&>(const_cast<const Table&>(*this).get_chunk(chunk_id));
-}
-
-const Chunk& Table::get_chunk(ChunkID chunk_id) const {
   Assert(chunk_id < _chunks.size(), "Chunk id is out of bound.");
   std::shared_lock lock(_chunks_mutex);
   return *_chunks.at(chunk_id);
+}
+
+const Chunk& Table::get_chunk(ChunkID chunk_id) const {
+  return const_cast<Table*>(this)->get_chunk(chunk_id);
 }
 
 // compresses the chunk compressing the value_segments to dictionary_segments.

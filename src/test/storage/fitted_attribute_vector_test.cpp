@@ -9,7 +9,7 @@
 #include "../lib/storage/base_segment.hpp"
 #include "../lib/storage/chunk.hpp"
 #include "../lib/storage/fitted_attribute_vector.hpp"
-#include "../lib/types.hpp"  //
+#include "../lib/types.hpp"
 
 class FittedAttributeVectorTest : public opossum::BaseTest {
  protected:
@@ -32,5 +32,6 @@ TEST_F(FittedAttributeVectorTest, Set) {
 
 TEST_F(FittedAttributeVectorTest, Size) { EXPECT_EQ(fitted_att_vec->size(), 3u); }
 
-TEST_F(FittedAttributeVectorTest, Width) { EXPECT_EQ(fitted_att_vec->width(), opossum::AttributeVectorWidth{sizeof(uint8_t)}); }
-
+TEST_F(FittedAttributeVectorTest, Width) {
+  EXPECT_EQ(fitted_att_vec->width(), opossum::AttributeVectorWidth{sizeof(uint8_t)});
+}
