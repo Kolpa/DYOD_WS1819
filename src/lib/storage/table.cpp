@@ -25,7 +25,7 @@ Table::Table(const uint32_t chunk_size)
 
 void Table::add_column(const std::string& name, const std::string& type) {
   DebugAssert(_column_names.size() < std::numeric_limits<uint16_t>::max(), "Maximum amount of columns reached.");
-  DebugAssert(!row_count(), "Cannot add columns if table contains any rows.");
+  DebugAssert(row_count() == 0, "Cannot add columns if table contains any rows.");
 
   _column_names.push_back(name);
   _column_types.push_back(type);
@@ -36,14 +36,14 @@ void Table::add_column(const std::string& name, const std::string& type) {
 
 void Table::append(std::vector<AllTypeVariant> values) {
   if (_is_full(*_current_chunk)) {
-    _open_new_chunk();
+      _append_new_chunk();
   }
 
   _current_chunk->append(values);
 }
 
 // creates a new chunk and sets it as current chunk;
-void Table::_open_new_chunk() {
+void Table::_append_new_chunk() {
   _current_chunk = std::make_shared<Chunk>();
   for (const auto& type : _column_types) {
     const auto segment = make_shared_by_data_type<BaseSegment, ValueSegment>(type);

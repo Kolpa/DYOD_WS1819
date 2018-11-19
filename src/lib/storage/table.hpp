@@ -90,7 +90,7 @@ class Table : private Noncopyable {
 
   // creates a new chunk and adds it to the table. _current_chunk is updated to point to the
   // newly created chunk.
-  void _open_new_chunk();
+  void _append_new_chunk();
 
   // returns true if the maximum number of rows in chunk has been reached.
   bool _is_full(const Chunk& chunk) const;
