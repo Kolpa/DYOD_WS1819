@@ -54,13 +54,13 @@ class DictionarySegment : public BaseSegment {
   // the DictionarySegment in this file. Replace the method signatures with actual implementations.
 
   // return the value at a certain position. If you want to write efficient operators, back off!
-  const AllTypeVariant operator[](const size_t i) const { return get(i); }
+  const AllTypeVariant operator[](const size_t i) const override { return get(i); }
 
   // return the value at a certain position.
   const T get(const size_t i) const { return _dictionary->at(_attribute_vector->get(i)); }
 
   // dictionary segments are immutable
-  void append(const AllTypeVariant&) {
+  void append(const AllTypeVariant&) override {
     throw std::runtime_error("Appending value to dictionary segment failed: Dictionary segments are immutable.");
   }
 
@@ -78,20 +78,24 @@ class DictionarySegment : public BaseSegment {
   ValueID lower_bound(T value) const {_BOUND(std::lower_bound)}
 
   // same as lower_bound(T), but accepts an AllTypeVariant
-  ValueID lower_bound(const AllTypeVariant& value) const { return lower_bound(value); }
+  ValueID lower_bound(const AllTypeVariant& value) const {
+    return lower_bound(value);
+  }
 
   // returns the first value ID that refers to a value > the search value
   // returns INVALID_VALUE_ID if all values are smaller than or equal to the search value
   ValueID upper_bound(T value) const {_BOUND(std::upper_bound)}
 
   // same as upper_bound(T), but accepts an AllTypeVariant
-  ValueID upper_bound(const AllTypeVariant& value) const { return upper_bound(value); }
+  ValueID upper_bound(const AllTypeVariant& value) const {
+    return upper_bound(value);
+  }
 
   // return the number of unique_values (dictionary entries)
   size_t unique_values_count() const { return _dictionary->size(); }
 
   // return the number of entries
-  size_t size() const { return _attribute_vector->size(); }
+  size_t size() const override { return _attribute_vector->size(); }
 
  protected:
   std::shared_ptr<std::vector<T>> _dictionary;
