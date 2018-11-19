@@ -17,7 +17,6 @@ set(
     storage/storage_manager_test.cpp
     storage/table_test.cpp
     storage/value_segment_test.cpp
-    storage/fitted_attribute_vector_test.cpp
 )
 
 # Both hyriseTest and hyriseSanitizers link against these

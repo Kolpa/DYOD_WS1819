@@ -56,6 +56,12 @@ TEST_F(StorageDictionarySegmentTest, LowerUpperBound) {
   EXPECT_EQ(dict_col->lower_bound(5), (opossum::ValueID)3);
   EXPECT_EQ(dict_col->upper_bound(5), (opossum::ValueID)3);
 
+  EXPECT_EQ(dict_col->lower_bound(opossum::AllTypeVariant{4}), (opossum::ValueID)2);
+  EXPECT_EQ(dict_col->upper_bound(opossum::AllTypeVariant{4}), (opossum::ValueID)3);
+
+  EXPECT_EQ(dict_col->lower_bound(opossum::AllTypeVariant{5}), (opossum::ValueID)3);
+  EXPECT_EQ(dict_col->upper_bound(opossum::AllTypeVariant{5}), (opossum::ValueID)3);
+
   EXPECT_EQ(dict_col->lower_bound(15), opossum::INVALID_VALUE_ID);
   EXPECT_EQ(dict_col->upper_bound(15), opossum::INVALID_VALUE_ID);
 }
