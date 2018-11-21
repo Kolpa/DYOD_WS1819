@@ -19,7 +19,6 @@ class StorageStorageManagerTest : public BaseTest {
 
     sm.add_table("first_table", t1);
     sm.add_table("second_table", t2);
-    std::cout << "LEWL" << std::endl;
   }
 };
 
