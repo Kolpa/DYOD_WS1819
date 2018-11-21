@@ -3,6 +3,7 @@ set(
     SOURCES
     all_type_variant.hpp
     resolve_type.hpp
+    operators/abstract_operator.hpp
     storage/base_attribute_vector.hpp
     storage/base_segment.hpp
     storage/chunk.cpp
@@ -15,6 +16,7 @@ set(
     storage/table.hpp
     storage/value_segment.cpp
     storage/value_segment.hpp
+    storage/reference_segment.hpp
     type_cast.cpp
     type_cast.hpp
     types.hpp
