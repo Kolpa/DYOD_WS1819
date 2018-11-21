@@ -23,6 +23,10 @@ namespace opossum {
 Table::Table(const uint32_t chunk_size)
     : _chunk_size{chunk_size}, _current_chunk{std::make_shared<Chunk>()}, _chunks{_current_chunk} {}
 
+void Table::add_column_definition(const std::string& name, const std::string& type) {
+  // Implementation goes here
+}
+
 void Table::add_column(const std::string& name, const std::string& type) {
   DebugAssert(_column_names.size() < std::numeric_limits<uint16_t>::max(), "Maximum amount of columns reached.");
   DebugAssert(row_count() == 0, "Cannot add columns if table contains any rows.");
@@ -36,7 +40,7 @@ void Table::add_column(const std::string& name, const std::string& type) {
 
 void Table::append(std::vector<AllTypeVariant> values) {
   if (_is_full(*_current_chunk)) {
-      _append_new_chunk();
+    _append_new_chunk();
   }
 
   _current_chunk->append(values);
@@ -50,6 +54,10 @@ void Table::_append_new_chunk() {
     _current_chunk->add_segment(segment);
   }
   _chunks.push_back(_current_chunk);
+}
+
+void Table::create_new_chunk() {
+  // Implementation goes here
 }
 
 uint16_t Table::column_count() const { return static_cast<uint16_t>(_column_names.size()); }
@@ -103,9 +111,7 @@ Chunk& Table::get_chunk(ChunkID chunk_id) {
   return *_chunks.at(chunk_id);
 }
 
-const Chunk& Table::get_chunk(ChunkID chunk_id) const {
-  return const_cast<Table*>(this)->get_chunk(chunk_id);
-}
+const Chunk& Table::get_chunk(ChunkID chunk_id) const { return const_cast<Table*>(this)->get_chunk(chunk_id); }
 
 // compresses the chunk compressing the value_segments to dictionary_segments.
 // The chunk to be compressed must be full.
@@ -125,6 +131,10 @@ void Table::compress_chunk(ChunkID chunk_id) {
   // Replace uncompressed chunk with dictionary compressed chunk.
   std::lock_guard lock(_chunks_mutex);
   _chunks[chunk_id] = std::move(compressed_chunk);
+}
+
+void emplace_chunk(Chunk chunk) {
+  // Implementation goes here
 }
 
 }  // namespace opossum
