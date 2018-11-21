@@ -24,10 +24,9 @@ TEST_F(FittedAttributeVectorTest, Get) {
 
 TEST_F(FittedAttributeVectorTest, Set) {
   fitted_att_vec->set(0, opossum::ValueID{5});
-  fitted_att_vec->set(20, opossum::ValueID{13});
+  EXPECT_THROW(fitted_att_vec->set(20, opossum::ValueID{13}), std::logic_error);
   EXPECT_EQ(fitted_att_vec->get(0), opossum::ValueID{5});
-  EXPECT_EQ(fitted_att_vec->get(20), opossum::ValueID{13});
-  EXPECT_EQ(fitted_att_vec->get(19), opossum::ValueID{0});
+  EXPECT_THROW(fitted_att_vec->get(20), std::logic_error);
 }
 
 TEST_F(FittedAttributeVectorTest, Size) { EXPECT_EQ(fitted_att_vec->size(), 3u); }

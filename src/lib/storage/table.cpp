@@ -106,9 +106,9 @@ void Table::emplace_chunk(Chunk chunk) {
 }
 
 Chunk& Table::get_chunk(ChunkID chunk_id) {
-  Assert(chunk_id < _chunks.size(), "Chunk id is out of bound.");
+  DebugAssert(chunk_id < _chunks.size(), "Chunk id is out of bound.");
   std::shared_lock lock(_chunks_mutex);
-  return *_chunks.at(chunk_id);
+  return *_chunks[chunk_id];
 }
 
 const Chunk& Table::get_chunk(ChunkID chunk_id) const { return const_cast<Table*>(this)->get_chunk(chunk_id); }

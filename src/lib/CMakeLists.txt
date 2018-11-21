@@ -5,6 +5,7 @@ set(
     resolve_type.hpp
     operators/abstract_operator.cpp
     operators/abstract_operator.hpp
+    operators/get_table.cpp
     operators/get_table.hpp
     operators/print.cpp
     operators/print.hpp
@@ -17,6 +18,7 @@ set(
     storage/chunk.hpp
     storage/dictionary_segment.hpp
     storage/fitted_attribute_vector.hpp
+    storage/reference_segment.cpp
     storage/reference_segment.hpp
     storage/storage_manager.cpp
     storage/storage_manager.hpp

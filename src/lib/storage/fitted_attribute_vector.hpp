@@ -24,14 +24,15 @@ class FittedAttributeVector : public BaseAttributeVector {
   FittedAttributeVector& operator=(FittedAttributeVector&&) = default;
 
   // returns the value id at a given position
-  ValueID get(const size_t i) const { return static_cast<ValueID>(_values.at(i)); }
+  ValueID get(const size_t offset) const {
+    DebugAssert(offset < _values.size(), "Offset is out of bounds.");
+    return static_cast<ValueID>(_values[offset]);
+  }
 
   // sets the value id at a given position
-  void set(const size_t i, const ValueID value_id) {
-    if (i >= _values.size()) {
-      _values.resize(i + 1);
-    }
-    _values.at(i) = static_cast<T>(value_id);
+  void set(const size_t offset, const ValueID value_id) {
+    DebugAssert(offset < _values.size(), "Offset is out of bounds.");
+    _values[offset] = static_cast<T>(value_id);
   }
 
   // returns the number of values
