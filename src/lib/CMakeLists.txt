@@ -9,9 +9,12 @@ set(
     operators/get_table.hpp
     operators/print.cpp
     operators/print.hpp
+    operators/table_scan.cpp
     operators/table_scan.hpp
+    operators/table_scan_impl.hpp
     operators/table_wrapper.cpp
     operators/table_wrapper.hpp
+    operators/base_table_scan_impl.hpp
     storage/base_attribute_vector.hpp
     storage/base_segment.hpp
     storage/chunk.cpp
