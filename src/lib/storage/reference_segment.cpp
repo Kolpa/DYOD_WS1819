@@ -10,8 +10,8 @@ ReferenceSegment::ReferenceSegment(const std::shared_ptr<const opossum::Table> r
     : _referenced_table(referenced_table), _referenced_column_id(referenced_column_id), _pos_list(pos) {
   Assert(_referenced_column_id < _referenced_table->column_count(),
          "Referenced column id does not exist in referenced table.");
-  Assert(referenced_table != nullptr, "Referenced table can not be null.");
-  Assert(pos != nullptr, "List of positions can not be null.");
+  Assert(referenced_table != nullptr, "Referenced table cannot be null.");
+  Assert(pos != nullptr, "List of positions cannot be null.");
 }
 
 const AllTypeVariant ReferenceSegment::operator[](const size_t offset) const {
@@ -30,5 +30,7 @@ size_t ReferenceSegment::size() const { return _pos_list->size(); }
 const std::shared_ptr<const PosList> ReferenceSegment::pos_list() const { return _pos_list; }
 
 const std::shared_ptr<const Table> ReferenceSegment::referenced_table() const { return _referenced_table; }
+
+ColumnID ReferenceSegment::referenced_column_id() const { return _referenced_column_id; }
 
 }  // namespace opossum
