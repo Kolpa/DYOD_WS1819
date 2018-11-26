@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "abstract_operator.hpp"
 #include "all_type_variant.hpp"
 #include "storage/table.hpp"
@@ -10,7 +12,7 @@
  * - do not produce empty chunks, unless the result is empty, in which case we produce a single empty chunk
  * - do not use operator[] on columns due to the virtual method calls involved and the use of AllTypeVariant
  * - therefore get the ValueSegments value vector or the DictionarySegments' att. vect. and the dict.
- *      when you want to scna the values.
+ *      when you want to scan the values.
  * - TableScan operator is not templated
  * - checking columns type: std::dynamic_pointer_cast<DictionarySegment>(b)
  *      if b can be casted to DictionarySegment, the pointer cast returns such a pointer,

@@ -4,29 +4,32 @@
 #include <utility>
 
 #include "base_table_scan_impl.hpp"
+#include "storage/reference_segment.hpp"
 #include "type_cast.hpp"
 #include "types.hpp"
 
-#include "utils/assert.hpp"
 #include "storage/chunk.hpp"
-#include <storage/reference_segment.hpp>
 #include "storage/table.hpp"
+#include "utils/assert.hpp"
+
+#define POS_LIST_RESERVATION_FACTOR 0.5
 
 namespace opossum {
 
-template<typename T>
+template <typename T>
 class TableScanImpl : public BaseTableScanImpl {
  public:
-  TableScanImpl(const std::shared_ptr<const Table>& input_table,
-                const ColumnID column_id, const ScanType scan_type,
+  TableScanImpl(const std::shared_ptr<const Table>& input_table, const ColumnID column_id, const ScanType scan_type,
                 const AllTypeVariant search_value)
-      : BaseTableScanImpl(), _input_table(input_table), _column_id(column_id),
-        _scan_type(scan_type), _search_value(type_cast<T>(search_value)) {
+      : BaseTableScanImpl(),
+        _input_table(input_table),
+        _column_id(column_id),
+        _scan_type(scan_type),
+        _search_value(type_cast<T>(search_value)) {
     DebugAssert(input_table != nullptr, "Input table must be defined.");
   }
 
  protected:
-
   const std::shared_ptr<const Table> _input_table;
   const ColumnID _column_id;
   const ScanType _scan_type;
@@ -42,16 +45,14 @@ class TableScanImpl : public BaseTableScanImpl {
     }
 
     // Iterate through all values of the input table.
-    // All values, which fulfill the filter criterium, will be added to the output table;
+    // All values, which fulfill the filter criteria, will be added to the output table;
 
     for (ChunkID chunk_id{0}; chunk_id < _input_table->chunk_count(); ++chunk_id) {
       const auto& segment_to_scan = _input_table->get_chunk(chunk_id).get_segment(_column_id);
 
-
       /*Jetzt iterieren wir eigentlich nur durch die segmente*/
       // Im Falle vom reference_segment holen wir das entsprechende Segment und iterieren dann, abhängig von der
       // segmentart dardurch.
-
 
       std::shared_ptr<PosList> pos_list;
 
@@ -115,7 +116,7 @@ class TableScanImpl : public BaseTableScanImpl {
   std::shared_ptr<PosList> _get_positions_of_accepted_values(const ChunkID& chunkID,
                                                              const std::shared_ptr<ValueSegment<T>>& segment) const {
     std::shared_ptr<PosList> pos_list = std::make_shared<PosList>();
-    pos_list->reserve(segment->size() / 2);
+    pos_list->reserve(segment->size() * POS_LIST_RESERVATION_FACTOR);
 
     auto offset = ChunkOffset{0};
     for (const auto& value : segment->values()) {
@@ -128,17 +129,17 @@ class TableScanImpl : public BaseTableScanImpl {
     return pos_list;
   }
 
-  std::shared_ptr<PosList> _get_positions_of_accepted_values(const ChunkID& chunkID,
-                                                             const std::shared_ptr<DictionarySegment<T>>& segment) const {
+  std::shared_ptr<PosList> _get_positions_of_accepted_values(
+      const ChunkID& chunkID, const std::shared_ptr<DictionarySegment<T>>& segment) const {
     std::shared_ptr<PosList> pos_list = std::make_shared<PosList>();
-    pos_list->reserve(segment->size() / 2);
+    pos_list->reserve(segment->size() * POS_LIST_RESERVATION_FACTOR);
 
     const auto& attribute_vector = segment->attribute_vector();
 
-    for (size_t i = 0; i < attribute_vector->size(); ++i) {
-      const auto& value = segment->value_by_value_id(attribute_vector->get(i));
+    for (size_t att_vec_offset = 0; att_vec_offset < attribute_vector->size(); ++att_vec_offset) {
+      const auto& value = segment->value_by_value_id(attribute_vector->get(att_vec_offset));
       if (_accepted_by_comparison(value)) {
-        pos_list->emplace_back(RowID{chunkID, ChunkOffset(i)});
+        pos_list->emplace_back(RowID{chunkID, ChunkOffset(att_vec_offset)});
       }
     }
 
@@ -148,12 +149,12 @@ class TableScanImpl : public BaseTableScanImpl {
   std::shared_ptr<PosList> _get_positions_of_accepted_values(const ChunkID& chunkID,
                                                              const std::shared_ptr<ReferenceSegment>& segment) const {
     std::shared_ptr<PosList> pos_list = std::make_shared<PosList>();
-    pos_list->reserve(segment->size() / 2);
+    pos_list->reserve(segment->size() * POS_LIST_RESERVATION_FACTOR);
 
-    for (size_t i = 0; i < segment->size(); ++i) {
-      const auto& value = type_cast<T>((*segment)[i]);
+    for (size_t seg_offset = 0; seg_offset < segment->size(); ++seg_offset) {
+      const auto& value = type_cast<T>((*segment)[seg_offset]);
       if (_accepted_by_comparison(value)) {
-        pos_list->push_back((*(segment->pos_list()))[i]);
+        pos_list->push_back((*(segment->pos_list()))[seg_offset]);
       }
     }
 

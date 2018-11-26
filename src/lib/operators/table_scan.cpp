@@ -4,8 +4,8 @@
 
 #include "base_table_scan_impl.hpp"
 #include "resolve_type.hpp"
-#include "table_scan_impl.hpp"
 #include "storage/table.hpp"
+#include "table_scan_impl.hpp"
 #include "utils/assert.hpp"
 
 namespace opossum {
@@ -25,11 +25,10 @@ AllTypeVariant TableScan::search_value() const { return _search_value; }
 std::shared_ptr<const Table> TableScan::_on_execute() {
   const auto input_table = _input_table_left();
   Assert(input_table != nullptr, "Input table must be defined.");
-  // get the type of the column with "column_id" of the input table.
+
   const auto& data_type = input_table->column_type(column_id());
-  auto table_scan = opossum::make_unique_by_data_type<BaseTableScanImpl, TableScanImpl>(data_type, input_table,
-                                                                                        column_id(), scan_type(),
-                                                                                        search_value());
+  auto table_scan = opossum::make_unique_by_data_type<BaseTableScanImpl, TableScanImpl>(
+      data_type, input_table, column_id(), scan_type(), search_value());
   return table_scan->execute();
 }
 
