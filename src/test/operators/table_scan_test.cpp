@@ -248,7 +248,6 @@ TEST_F(OperatorsTableScanTest, ScanWithEmptyInput) {
   // scan_1 produced an empty result
   auto scan_2 = std::make_shared<opossum::TableScan>(scan_1, ColumnID{1}, ScanType::OpEquals, 456.7);
   scan_2->execute();
-
   EXPECT_EQ(scan_2->get_output()->row_count(), static_cast<size_t>(0));
 }
 
