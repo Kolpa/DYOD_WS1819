@@ -2,30 +2,35 @@
 
 #include <memory>
 
+#include "base_table_scan_impl.hpp"
 #include "resolve_type.hpp"
-#include "storage/table.hpp"
 #include "table_scan_impl.hpp"
+#include "storage/table.hpp"
+#include "utils/assert.hpp"
 
 namespace opossum {
 
 TableScan::TableScan(const std::shared_ptr<const AbstractOperator> in, ColumnID column_id, const ScanType scan_type,
                      const AllTypeVariant search_value)
-    : AbstractOperator(in) {
-  // get the type if the corresponding column of the input table
-  const auto& data_type = _input_left->get_output()->column_type(column_id);
-  _table_scan_impl = opossum::make_unique_by_data_type<BaseTableScanImpl, TableScanImpl>(data_type, in, column_id,
-                                                                                         scan_type, search_value);
+    : AbstractOperator(in), _column_id(column_id), _scan_type(scan_type), _search_value(search_value) {
+  Assert(in != nullptr, "Input operator must be defined.");
 }
 
-ColumnID TableScan::column_id() const { return _table_scan_impl->column_id(); }
+ColumnID TableScan::column_id() const { return _column_id; }
 
-ScanType TableScan::scan_type() const { return _table_scan_impl->comparison_operator(); }
+ScanType TableScan::scan_type() const { return _scan_type; }
 
-const AllTypeVariant& TableScan::search_value() const { return _table_scan_impl->comparison_value(); }
+AllTypeVariant TableScan::search_value() const { return _search_value; }
 
 std::shared_ptr<const Table> TableScan::_on_execute() {
-  _table_scan_impl->execute();
-  return _table_scan_impl->get_output();
+  const auto input_table = _input_table_left();
+  Assert(input_table != nullptr, "Input table must be defined.");
+  // get the type of the column with "column_id" of the input table.
+  const auto& data_type = input_table->column_type(column_id());
+  auto table_scan = opossum::make_unique_by_data_type<BaseTableScanImpl, TableScanImpl>(data_type, input_table,
+                                                                                        column_id(), scan_type(),
+                                                                                        search_value());
+  return table_scan->execute();
 }
 
 }  // namespace opossum

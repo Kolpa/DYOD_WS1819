@@ -2,6 +2,8 @@
 
 #include <memory>
 
+#include "utils/assert.hpp"
+
 namespace opossum {
 
 ReferenceSegment::ReferenceSegment(const std::shared_ptr<const opossum::Table> referenced_table,
@@ -22,7 +24,8 @@ const AllTypeVariant ReferenceSegment::operator[](const size_t offset) const {
   const Chunk& referenced_chunk = _referenced_table->get_chunk(row_id.chunk_id);
 
   DebugAssert(row_id.chunk_offset < referenced_chunk.size(), "Target chunk offset is out of bounds.");
-  return (*referenced_chunk.get_segment(_referenced_column_id))[row_id.chunk_offset];
+  const auto& segment = referenced_chunk.get_segment(_referenced_column_id);
+  return (*segment)[row_id.chunk_offset];
 }
 
 size_t ReferenceSegment::size() const { return _pos_list->size(); }

@@ -6,9 +6,9 @@
 
 #include "types.hpp"
 
-namespace opossum {
+#include "storage/table.hpp"
 
-class Table;
+namespace opossum {
 
 // AbstractOperator is the abstract super class for all operators.
 // All operators have up to two input tables and one output table.

@@ -40,24 +40,20 @@ void Table::add_column(const std::string& name, const std::string& type) {
 
 void Table::append(std::vector<AllTypeVariant> values) {
   if (_is_full(*_current_chunk)) {
-    _append_new_chunk();
+    create_new_chunk();
   }
 
   _current_chunk->append(values);
 }
 
 // creates a new chunk and sets it as current chunk;
-void Table::_append_new_chunk() {
+void Table::create_new_chunk() {
   _current_chunk = std::make_shared<Chunk>();
   for (const auto& type : _column_types) {
     const auto segment = make_shared_by_data_type<BaseSegment, ValueSegment>(type);
     _current_chunk->add_segment(segment);
   }
   _chunks.push_back(_current_chunk);
-}
-
-void Table::create_new_chunk() {
-  // Implementation goes here
 }
 
 uint16_t Table::column_count() const { return static_cast<uint16_t>(_column_names.size()); }
