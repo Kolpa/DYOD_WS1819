@@ -132,6 +132,12 @@ TEST_F(OperatorsTableScanTest, SingleScanReturnsCorrectRowCount) {
   EXPECT_TABLE_EQ(scan->get_output(), expected_result);
 }
 
+TEST_F(OperatorsTableScanTest, ThrowOnDatatypeMismatch) {
+  auto scan = std::make_shared<TableScan>(_table_wrapper, ColumnID{0}, ScanType::OpGreaterThan, 1234.8);
+
+  EXPECT_THROW(scan->execute(), std::exception);
+}
+
 TEST_F(OperatorsTableScanTest, ScanOnDictColumn) {
   // we do not need to check for a non existing value, because that happens automatically when we scan the second chunk
 
