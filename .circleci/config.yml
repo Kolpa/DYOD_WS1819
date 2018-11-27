@@ -41,15 +41,11 @@ jobs:
           command: |
             cd build
             make hyriseCoverage hyriseTest
-      - run:
-          name: copy test files
-          command: |
-            mkdir -p build/src/test/tables
-            cp src/test/tables/*.tbl build/src/test/tables/
       - persist_to_workspace:
           root: ~/project
           paths:
             - build
+            - src
   test:
     executor: docker_dude
     steps:
@@ -63,8 +59,7 @@ jobs:
       - run:
           name: running tests
           command: |
-            cd build
-            ./hyriseTest
+            ./build/hyriseTest
   cover:
     executor: docker_dude
     steps:
@@ -72,20 +67,18 @@ jobs:
           name: install deps
           command: |
             apt-get update
-            apt-get install -y ca-certificates python2.7 python-pip
+            apt-get install -y ca-certificates python2.7 python-pip git
             pip install cpp-coveralls
       - attach_workspace:
           at: ~/project
       - run:
           name: running coverage
           command: |
-            cd build
-            ./hyriseCoverage
+            ./build/hyriseCoverage
       - run:
           name: submitting coverage
           command: |
-            cd build
-            coveralls --exclude lib --exclude tests --gcov-options '\-lp'
+            coveralls --include src/lib --gcov-options '\-lp'
 
 workflows:
   version: 2
