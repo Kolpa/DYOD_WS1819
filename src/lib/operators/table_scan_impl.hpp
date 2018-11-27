@@ -47,17 +47,16 @@ class TableScanImpl : public BaseTableScanImpl {
     }
 
     // Iterate through all values of the input table.
-    // All values, which fulfill the filter criteria, will be added to the output table;
+    // All values, which fulfill the filter criterion, will be added to the output table;
 
     for (ChunkID chunk_id{0}; chunk_id < _input_table->chunk_count(); ++chunk_id) {
       const auto segment_to_scan = _input_table->get_chunk(chunk_id).get_segment(_column_id);
 
-      const std::shared_ptr<ReferenceSegment> ref_segment =
-          std::dynamic_pointer_cast<ReferenceSegment>(segment_to_scan);
+      const auto& ref_segment = std::dynamic_pointer_cast<ReferenceSegment>(segment_to_scan);
 
       if (ref_segment == nullptr) {
         // non ref segment
-        const std::shared_ptr<PosList> pos_list = _get_positions_of_accepted_values(chunk_id, segment_to_scan);
+        const auto pos_list = _get_positions_of_accepted_values(chunk_id, segment_to_scan);
 
         if (!pos_list->empty()) {
           auto chunk_to_add = _create_chunk(pos_list);
@@ -65,7 +64,7 @@ class TableScanImpl : public BaseTableScanImpl {
         }
       } else {
         // ref semgent
-        const std::shared_ptr<PosList> pos_list = _get_positions_of_accepted_values(chunk_id, ref_segment);
+        const auto pos_list = _get_positions_of_accepted_values(chunk_id, ref_segment);
 
         if (!pos_list->empty()) {
           auto chunk_to_add = _create_chunk(pos_list, ref_segment->referenced_table());
@@ -137,24 +136,6 @@ class TableScanImpl : public BaseTableScanImpl {
     throw std::runtime_error("Unsupported segment type.");
   }
 
-  // gets the positions of accepted values for a value segment of dict. segment
-  std::shared_ptr<PosList> _get_positions_of_accepted_values(const std::shared_ptr<BaseSegment>& segment,
-                                                             std::shared_ptr<PosList>& target_list,
-                                                             const std::shared_ptr<PosList>& positions_to_scan) const {
-    // Find out out the type of the segment by using dynamic pointer casts.
-    const auto value_segment = std::dynamic_pointer_cast<ValueSegment<T>>(segment);
-    if (value_segment != nullptr) {
-      return _get_positions_of_accepted_values(value_segment, target_list, positions_to_scan);
-    }
-
-    const auto dictionary_segment = std::dynamic_pointer_cast<DictionarySegment<T>>(segment);
-    if (dictionary_segment != nullptr) {
-      return _get_positions_of_accepted_values(dictionary_segment, target_list, positions_to_scan);
-    }
-
-    throw std::runtime_error("Unsupported segment type.");
-  }
-
   std::shared_ptr<PosList> _get_positions_of_accepted_values(const ChunkID& chunkID,
                                                              const std::shared_ptr<ValueSegment<T>>& segment,
                                                              std::shared_ptr<PosList> target_list) const {
@@ -169,20 +150,6 @@ class TableScanImpl : public BaseTableScanImpl {
     return target_list;
   }
 
-  std::shared_ptr<PosList> _get_positions_of_accepted_values(const std::shared_ptr<ValueSegment<T>>& segment,
-                                                             std::shared_ptr<PosList> target_list,
-                                                             const std::shared_ptr<PosList> positions_to_scan) const {
-    const auto& values = segment->values();
-    for (const auto& row_id : *positions_to_scan) {
-      const auto& value = values[row_id.chunk_offset];
-      if (_accepted_by_comparison(value)) {
-        target_list->emplace_back(row_id);
-      }
-    }
-
-    return target_list;
-  }
-
   std::shared_ptr<PosList> _get_positions_of_accepted_values(const ChunkID& chunkID,
                                                              const std::shared_ptr<DictionarySegment<T>>& segment,
                                                              std::shared_ptr<PosList> target_list) const {
@@ -192,6 +159,39 @@ class TableScanImpl : public BaseTableScanImpl {
       const auto& value = segment->value_by_value_id(attribute_vector->get(att_vec_offset));
       if (_accepted_by_comparison(value)) {
         target_list->emplace_back(RowID{chunkID, ChunkOffset(att_vec_offset)});
+      }
+    }
+
+    return target_list;
+  }
+
+
+  // gets the positions of accepted values for a value segment of dict. segment
+  std::shared_ptr<PosList> _get_positions_of_accepted_values(const std::shared_ptr<BaseSegment>& segment,
+                                                             std::shared_ptr<PosList>& target_list,
+                                                             const std::shared_ptr<PosList>& positions_to_scan) const {
+    // Find out  the type of the segment by using dynamic pointer casts.
+    const auto value_segment = std::dynamic_pointer_cast<ValueSegment<T>>(segment);
+    if (value_segment != nullptr) {
+      return _get_positions_of_accepted_values(value_segment, target_list, positions_to_scan);
+    }
+
+    const auto dictionary_segment = std::dynamic_pointer_cast<DictionarySegment<T>>(segment);
+    if (dictionary_segment != nullptr) {
+      return _get_positions_of_accepted_values(dictionary_segment, target_list, positions_to_scan);
+    }
+
+    throw std::runtime_error("Unsupported segment type.");
+  }
+
+  std::shared_ptr<PosList> _get_positions_of_accepted_values(const std::shared_ptr<ValueSegment<T>>& segment,
+                                                             std::shared_ptr<PosList> target_list,
+                                                             const std::shared_ptr<PosList> positions_to_scan) const {
+    const auto& values = segment->values();
+    for (const auto& row_id : *positions_to_scan) {
+      const auto& value = values[row_id.chunk_offset];
+      if (_accepted_by_comparison(value)) {
+        target_list->emplace_back(row_id);
       }
     }
 
@@ -230,7 +230,7 @@ class TableScanImpl : public BaseTableScanImpl {
   }
 
   // this method takes a PosList and creates a list of PosLists so that every PosList
-  // is just referenced to a single chunk.
+  // contains only entries to one chunk.
   const std::shared_ptr<std::vector<std::shared_ptr<PosList>>> _get_single_chunk_pos_lists(
       const std::shared_ptr<const PosList>& pos_list) const {
     std::shared_ptr<std::vector<std::shared_ptr<PosList>>> single_chunk_pos_lists =
