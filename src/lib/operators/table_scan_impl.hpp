@@ -26,7 +26,7 @@ class TableScanImpl : public BaseTableScanImpl {
         _input_table(input_table),
         _column_id(column_id),
         _scan_type(scan_type),
-        _search_value(type_cast<T>(search_value)) {
+        _search_value(boost::get<T>(search_value)) {
     DebugAssert(input_table != nullptr, "Input table must be defined.");
   }
 
@@ -58,8 +58,7 @@ class TableScanImpl : public BaseTableScanImpl {
         Chunk chunk_to_add;
         if (const auto& ref_seg = std::dynamic_pointer_cast<ReferenceSegment>(segment_to_scan)) {
           chunk_to_add = _create_chunk(pos_list, ref_seg->referenced_table());
-        }
-        else {
+        } else {
           chunk_to_add = _create_chunk(pos_list, _input_table);
         }
 
