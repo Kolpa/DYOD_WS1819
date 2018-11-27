@@ -94,6 +94,9 @@ class AbstractScanner {
                IndexFetcher& index_fetcher) {
 
     const auto value_id_to_compare_to = get_value_id(segment, cmp_value);
+
+    // Todo: there are cases where we could have a select all or select none case here.
+    // say a avlue is not in the dictionary.
     PosList pos_list;
 
     const auto& attribute_vector = segment->attribute_vector();
