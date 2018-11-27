@@ -2,13 +2,17 @@
 
 #include <memory>
 
+#include "types.hpp"
+
+#include "storage/chunk.hpp"
+#include "storage/table.hpp"
 #include "utils/assert.hpp"
 
 namespace opossum {
 
-ReferenceSegment::ReferenceSegment(const std::shared_ptr<const opossum::Table> referenced_table,
+ReferenceSegment::ReferenceSegment(const std::shared_ptr<const Table> referenced_table,
                                    const opossum::ColumnID referenced_column_id,
-                                   const std::shared_ptr<const opossum::PosList> pos)
+                                   const std::shared_ptr<const PosList> pos)
     : _referenced_table(referenced_table), _referenced_column_id(referenced_column_id), _pos_list(pos) {
   Assert(_referenced_column_id < _referenced_table->column_count(),
          "Referenced column id does not exist in referenced table.");

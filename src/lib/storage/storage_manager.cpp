@@ -8,6 +8,8 @@
 #include <utility>
 #include <vector>
 
+#include "table.hpp"
+
 #include "utils/assert.hpp"
 
 namespace opossum {

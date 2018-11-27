@@ -10,6 +10,7 @@
 #include "type_cast.hpp"
 #include "types.hpp"
 
+#include "boost/variant/get.hpp"
 #include "storage/chunk.hpp"
 #include "storage/reference_segment.hpp"
 #include "storage/table.hpp"
@@ -17,6 +18,10 @@
 
 namespace opossum {
 
+/**
+ * Implementation of table scan operator
+ * @tparam T Type of column to scan
+ */
 template <typename T>
 class TableScanImpl : public BaseTableScanImpl {
  public:
@@ -36,6 +41,9 @@ class TableScanImpl : public BaseTableScanImpl {
   const ScanType _scan_type;
   const T _search_value;
 
+  /**
+   * Returns a table with the selected RowIdDs.
+   */
   std::shared_ptr<const Table> execute() const override {
     auto output_table = std::make_shared<Table>();
 
@@ -47,13 +55,15 @@ class TableScanImpl : public BaseTableScanImpl {
 
     const auto scanner = AbstractSegmentScanner<T>::from_scan_type(_scan_type);
 
-    // Iterate through all values of the input table.
-    // All values, which fulfill the filter criterion, will be added to the output table;
-
+    // Iterate over all chunks of the input table.
+    // Each chunk is scanned individually.
+    // Rows within chunk, for which the filter criterion applies, will be selected and added to a ReferenceSegment
+    // This ReferenceSegment will be added to a new chunk within the output_table
     for (ChunkID chunk_id{0}; chunk_id < _input_table->chunk_count(); ++chunk_id) {
       const auto segment_to_scan = _input_table->get_chunk(chunk_id).get_segment(_column_id);
       const auto pos_list = std::make_shared<const PosList>(scanner->scan(chunk_id, segment_to_scan, _search_value));
 
+      // Don't add e,pty chunks
       if (!pos_list->empty()) {
         Chunk chunk_to_add;
         if (const auto& ref_seg = std::dynamic_pointer_cast<ReferenceSegment>(segment_to_scan)) {
@@ -66,6 +76,7 @@ class TableScanImpl : public BaseTableScanImpl {
       }
     }
 
+    // In case no rows were selected, create one empty chunk within the output_table.
     if (output_table->row_count() == 0) {
       output_table->emplace_chunk(std::move(_create_chunk(std::make_shared<PosList>(), _input_table)));
     }
@@ -73,6 +84,10 @@ class TableScanImpl : public BaseTableScanImpl {
     return output_table;
   }
 
+  /**
+   * Creates a new chunk.
+   * The new chunk will have a ReferenceSegement initialized with pos_list for each segment in table.
+   */
   Chunk _create_chunk(const std::shared_ptr<const PosList>& pos_list, const std::shared_ptr<const Table>& table) const {
     DebugAssert(table != nullptr, "Input table is not initialized.");
     Chunk chunk;
