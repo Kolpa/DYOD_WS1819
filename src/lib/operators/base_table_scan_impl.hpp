@@ -15,7 +15,7 @@ namespace opossum {
  * TableScanImpl class. Since a TableScanImpl object shall be member of class TableScan,
  * but the templated type is just known while runtime, a not templated class is required.
  */
-class BaseTableScanImpl : public Noncopyable {
+class BaseTableScanImpl : private Noncopyable {
  public:
   BaseTableScanImpl() = default;
 

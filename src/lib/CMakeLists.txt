@@ -9,6 +9,7 @@ set(
     operators/get_table.hpp
     operators/print.cpp
     operators/print.hpp
+    operators/segment_scanner.hpp
     operators/table_scan.cpp
     operators/table_scan.hpp
     operators/table_scan_impl.hpp
