@@ -23,7 +23,7 @@ ScanType TableScan::scan_type() const { return _scan_type; }
 AllTypeVariant TableScan::search_value() const { return _search_value; }
 
 std::shared_ptr<const Table> TableScan::_on_execute() {
-  const auto input_table = _input_table_left();
+  const auto& input_table = _input_table_left();
   Assert(input_table != nullptr, "Input table must be defined.");
 
   const auto& data_type = input_table->column_type(column_id());

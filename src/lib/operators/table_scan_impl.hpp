@@ -15,8 +15,6 @@
 #include "storage/table.hpp"
 #include "utils/assert.hpp"
 
-#define POS_LIST_RESERVATION_FACTOR 0.5
-
 namespace opossum {
 
 template <typename T>
