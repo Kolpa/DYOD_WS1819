@@ -268,4 +268,13 @@ TEST_F(OperatorsTableScanTest, ScanOnWideDictionarySegment) {
   EXPECT_EQ(scan_2->get_output()->row_count(), static_cast<size_t>(37));
 }
 
+TEST_F(OperatorsTableScanTest, UnknownScanTypeShouldThrow) {
+  // 2**8 + 1 values require a data type of 16bit.
+  const auto table_wrapper_dict_16 = get_table_op_with_n_dict_entries((1 << 8) + 1);
+  auto scan_1 =
+      std::make_shared<opossum::TableScan>(table_wrapper_dict_16, ColumnID{0}, static_cast<ScanType>(10), 200);
+
+  EXPECT_THROW(scan_1->execute(), std::runtime_error);
+}
+
 }  // namespace opossum

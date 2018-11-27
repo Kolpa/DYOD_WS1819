@@ -93,4 +93,13 @@ TEST_F(ReferenceSegmentTest, RetrievesValuesFromChunks) {
   EXPECT_EQ(reference_segment[2], column_2[1]);
 }
 
+TEST_F(ReferenceSegmentTest, RetrievesReferencedColumnId) {
+  // PosList with (0, 2), (1, 0), (1, 1)
+  auto pos_list = std::make_shared<PosList>(
+      std::initializer_list<RowID>({RowID{ChunkID{0}, 2}, RowID{ChunkID{1}, 0}, RowID{ChunkID{1}, 1}}));
+  auto reference_segment = ReferenceSegment(_test_table, ColumnID{0}, pos_list);
+
+  EXPECT_EQ(reference_segment.referenced_column_id(), ColumnID{0});
+}
+
 }  // namespace opossum
