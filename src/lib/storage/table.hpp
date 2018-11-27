@@ -82,7 +82,8 @@ class Table : private Noncopyable {
   // note this is slow and not thread-safe and should be used for testing purposes only
   void append(std::vector<AllTypeVariant> values);
 
-  // creates a new chunk and appends it
+  // creates a new chunk and appends it. _current_chunk is updated to point to the
+  // newly created chunk.
   void create_new_chunk();
 
   // compresses a ValueSegment into a DictionarySegment
@@ -95,10 +96,6 @@ class Table : private Noncopyable {
   std::vector<std::string> _column_names;
   std::vector<std::string> _column_types;
   mutable std::shared_mutex _chunks_mutex;
-
-  // creates a new chunk and adds it to the table. _current_chunk is updated to point to the
-  // newly created chunk.
-  void _append_new_chunk();
 
   // returns true if the maximum number of rows in chunk has been reached.
   bool _is_full(const Chunk& chunk) const;

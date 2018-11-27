@@ -6,10 +6,11 @@
 #include <string>
 #include <vector>
 
-#include "storage/table.hpp"
 #include "types.hpp"
 
 namespace opossum {
+
+class Table;
 
 // The StorageManager is a singleton that maintains all tables
 // by mapping table names to table instances.

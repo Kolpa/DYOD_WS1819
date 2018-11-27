@@ -60,34 +60,34 @@ TEST_F(StorageTableTest, EmplaceChunkOnNonEmptyTable) {
   c.add_segment(make_shared_by_data_type<BaseSegment, ValueSegment>("string"));
   t.append({1, "DYOD"});
 
-  // Fail, because the last chunk is not completely full
-  EXPECT_THROW(t.emplace_chunk(std::move(c)), std::exception);
-
-  t.append({2, "DYOD"});
-  EXPECT_EQ(t.chunk_count(), 1u);
-  c.add_segment(make_shared_by_data_type<BaseSegment, ValueSegment>("int"));
-  c.add_segment(make_shared_by_data_type<BaseSegment, ValueSegment>("string"));
-  // line should succeed.
-  t.emplace_chunk(std::move(c));
+  EXPECT_NO_THROW(t.emplace_chunk(std::move(c)));
   EXPECT_EQ(t.chunk_count(), 2u);
+  t.append({2, "DYOD"});
+
+  Chunk c2;
+  c2.add_segment(make_shared_by_data_type<BaseSegment, ValueSegment>("int"));
+  c2.add_segment(make_shared_by_data_type<BaseSegment, ValueSegment>("string"));
+  // line should succeed.
+  t.emplace_chunk(std::move(c2));
+  EXPECT_EQ(t.chunk_count(), 3u);
 
   // fill emplaced chunk
   t.append({3, "DYOD"});
   t.append({4, "DYOD"});
-  EXPECT_EQ(t.chunk_count(), 2u);
+  EXPECT_EQ(t.chunk_count(), 3u);
 
   EXPECT_EQ(type_cast<int>(t.get_chunk(static_cast<ChunkID>(0)).get_segment(static_cast<ColumnID>(0))->operator[](0)),
             1);
-  EXPECT_EQ(type_cast<int>(t.get_chunk(static_cast<ChunkID>(0)).get_segment(static_cast<ColumnID>(0))->operator[](1)),
-            2);
   EXPECT_EQ(type_cast<int>(t.get_chunk(static_cast<ChunkID>(1)).get_segment(static_cast<ColumnID>(0))->operator[](0)),
+            2);
+  EXPECT_EQ(type_cast<int>(t.get_chunk(static_cast<ChunkID>(2)).get_segment(static_cast<ColumnID>(0))->operator[](0)),
             3);
-  EXPECT_EQ(type_cast<int>(t.get_chunk(static_cast<ChunkID>(1)).get_segment(static_cast<ColumnID>(0))->operator[](1)),
+  EXPECT_EQ(type_cast<int>(t.get_chunk(static_cast<ChunkID>(2)).get_segment(static_cast<ColumnID>(0))->operator[](1)),
             4);
 
-  c.add_segment(make_shared_by_data_type<BaseSegment, ValueSegment>("int"));
+  c2.add_segment(make_shared_by_data_type<BaseSegment, ValueSegment>("int"));
   // fail, because chunk has wrong number of segments
-  EXPECT_THROW(t.emplace_chunk(std::move(c)), std::exception);
+  EXPECT_THROW(t.emplace_chunk(std::move(c2)), std::exception);
 }
 
 TEST_F(StorageTableTest, EmplaceChunkOnEmptyTable) {

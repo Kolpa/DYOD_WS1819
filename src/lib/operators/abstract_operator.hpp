@@ -8,8 +8,6 @@
 
 namespace opossum {
 
-class Table;
-
 // AbstractOperator is the abstract super class for all operators.
 // All operators have up to two input tables and one output table.
 // Their lifecycle has three phases:
@@ -23,6 +21,8 @@ class Table;
 // Operators shall not be executed twice.
 //
 // Find more information about operators in our Wiki: https://github.com/hyrise/hyrise/wiki/operator-concept
+
+class Table;
 
 class AbstractOperator : private Noncopyable {
  public:

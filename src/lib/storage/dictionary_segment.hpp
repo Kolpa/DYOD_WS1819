@@ -54,10 +54,13 @@ class DictionarySegment : public BaseSegment {
   // the DictionarySegment in this file. Replace the method signatures with actual implementations.
 
   // return the value at a certain position. If you want to write efficient operators, back off!
-  const AllTypeVariant operator[](const size_t i) const override { return get(i); }
+  const AllTypeVariant operator[](const size_t offset) const override { return get(offset); }
 
   // return the value at a certain position.
-  const T get(const size_t i) const { return _dictionary->at(_attribute_vector->get(i)); }
+  const T get(const size_t offset) const {
+    DebugAssert(offset < _dictionary->size(), "Offset is out of bounds.");
+    return (*_dictionary)[_attribute_vector->get(offset)];
+  }
 
   // dictionary segments are immutable
   void append(const AllTypeVariant&) override {
@@ -71,21 +74,28 @@ class DictionarySegment : public BaseSegment {
   std::shared_ptr<const BaseAttributeVector> attribute_vector() const { return _attribute_vector; }
 
   // return the value represented by a given ValueID
-  const T& value_by_value_id(ValueID value_id) const { return _dictionary->at(value_id); }
+  const T& value_by_value_id(ValueID value_id) const {
+    DebugAssert(value_id < _dictionary->size(), "value id is out of bounds.");
+    return (*_dictionary)[value_id];
+  }
 
   // returns the first value ID that refers to a value >= the search value
   // returns INVALID_VALUE_ID if all values are smaller than the search value
   ValueID lower_bound(T value) const {_BOUND(std::lower_bound)}
 
   // same as lower_bound(T), but accepts an AllTypeVariant
-  ValueID lower_bound(const AllTypeVariant& value) const { return lower_bound(type_cast<T>(value)); }
+  ValueID lower_bound(const AllTypeVariant& value) const {
+    return lower_bound(type_cast<T>(value));
+  }
 
   // returns the first value ID that refers to a value > the search value
   // returns INVALID_VALUE_ID if all values are smaller than or equal to the search value
   ValueID upper_bound(T value) const {_BOUND(std::upper_bound)}
 
   // same as upper_bound(T), but accepts an AllTypeVariant
-  ValueID upper_bound(const AllTypeVariant& value) const { return upper_bound(type_cast<T>(value)); }
+  ValueID upper_bound(const AllTypeVariant& value) const {
+    return upper_bound(type_cast<T>(value));
+  }
 
   // return the number of unique_values (dictionary entries)
   size_t unique_values_count() const { return _dictionary->size(); }

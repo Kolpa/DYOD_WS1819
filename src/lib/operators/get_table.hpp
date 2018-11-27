@@ -8,6 +8,8 @@
 
 namespace opossum {
 
+class Table;
+
 // operator to retrieve a table from the StorageManager by specifying its name
 class GetTable : public AbstractOperator {
  public:
@@ -17,5 +19,6 @@ class GetTable : public AbstractOperator {
 
  protected:
   std::shared_ptr<const Table> _on_execute() override;
+  const std::string _table_name;
 };
 }  // namespace opossum

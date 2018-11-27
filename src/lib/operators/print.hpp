@@ -19,7 +19,7 @@ class Print : public AbstractOperator {
   static void print(std::shared_ptr<const Table> table, std::ostream& out = std::cout);
 
  protected:
-  std::vector<uint16_t> column_string_widths(uint16_t min, uint16_t max, std::shared_ptr<const Table> t) const;
+  std::vector<uint16_t> _column_string_widths(uint16_t min, uint16_t max, std::shared_ptr<const Table> t) const;
   std::shared_ptr<const Table> _on_execute() override;
 
   // stream to print the result

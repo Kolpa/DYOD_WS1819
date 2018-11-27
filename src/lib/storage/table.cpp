@@ -24,15 +24,15 @@ Table::Table(const uint32_t chunk_size)
     : _chunk_size{chunk_size}, _current_chunk{std::make_shared<Chunk>()}, _chunks{_current_chunk} {}
 
 void Table::add_column_definition(const std::string& name, const std::string& type) {
-  // Implementation goes here
-}
-
-void Table::add_column(const std::string& name, const std::string& type) {
   DebugAssert(_column_names.size() < std::numeric_limits<uint16_t>::max(), "Maximum amount of columns reached.");
   DebugAssert(row_count() == 0, "Cannot add columns if table contains any rows.");
 
   _column_names.push_back(name);
   _column_types.push_back(type);
+}
+
+void Table::add_column(const std::string& name, const std::string& type) {
+  add_column_definition(name, type);
 
   const auto segment = make_shared_by_data_type<BaseSegment, ValueSegment>(type);
   _current_chunk->add_segment(segment);
@@ -40,24 +40,20 @@ void Table::add_column(const std::string& name, const std::string& type) {
 
 void Table::append(std::vector<AllTypeVariant> values) {
   if (_is_full(*_current_chunk)) {
-    _append_new_chunk();
+    create_new_chunk();
   }
 
   _current_chunk->append(values);
 }
 
 // creates a new chunk and sets it as current chunk;
-void Table::_append_new_chunk() {
+void Table::create_new_chunk() {
   _current_chunk = std::make_shared<Chunk>();
   for (const auto& type : _column_types) {
     const auto segment = make_shared_by_data_type<BaseSegment, ValueSegment>(type);
     _current_chunk->add_segment(segment);
   }
   _chunks.push_back(_current_chunk);
-}
-
-void Table::create_new_chunk() {
-  // Implementation goes here
 }
 
 uint16_t Table::column_count() const { return static_cast<uint16_t>(_column_names.size()); }
@@ -83,9 +79,15 @@ uint32_t Table::chunk_size() const { return _chunk_size; }
 
 const std::vector<std::string>& Table::column_names() const { return _column_names; }
 
-const std::string& Table::column_name(ColumnID column_id) const { return _column_names.at(column_id); }
+const std::string& Table::column_name(ColumnID column_id) const {
+  DebugAssert(column_id < _column_names.size(), "Column id is out of bounds.");
+  return _column_names[column_id];
+}
 
-const std::string& Table::column_type(ColumnID column_id) const { return _column_types.at(column_id); }
+const std::string& Table::column_type(ColumnID column_id) const {
+  DebugAssert(column_id < _column_types.size(), "Column id is out of bounds.");
+  return _column_types[column_id];
+}
 
 bool Table::_is_full(const Chunk& chunk) const { return chunk.size() == _chunk_size; }
 
@@ -98,7 +100,6 @@ void Table::emplace_chunk(Chunk chunk) {
     return;
   }
 
-  DebugAssert(_is_full(*_current_chunk), "The last chunk must be completely filled.");
   // This is just a primitive verification
   DebugAssert(chunk.column_count() == column_count(), "The chunk's columns must match to the columns of the table.");
   _current_chunk = std::make_shared<Chunk>(std::move(chunk));
@@ -106,9 +107,9 @@ void Table::emplace_chunk(Chunk chunk) {
 }
 
 Chunk& Table::get_chunk(ChunkID chunk_id) {
-  Assert(chunk_id < _chunks.size(), "Chunk id is out of bound.");
+  DebugAssert(chunk_id < _chunks.size(), "Chunk id is out of bound.");
   std::shared_lock lock(_chunks_mutex);
-  return *_chunks.at(chunk_id);
+  return *_chunks[chunk_id];
 }
 
 const Chunk& Table::get_chunk(ChunkID chunk_id) const { return const_cast<Table*>(this)->get_chunk(chunk_id); }
@@ -131,10 +132,6 @@ void Table::compress_chunk(ChunkID chunk_id) {
   // Replace uncompressed chunk with dictionary compressed chunk.
   std::lock_guard lock(_chunks_mutex);
   _chunks[chunk_id] = std::move(compressed_chunk);
-}
-
-void emplace_chunk(Chunk chunk) {
-  // Implementation goes here
 }
 
 }  // namespace opossum
