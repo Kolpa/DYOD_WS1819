@@ -6,8 +6,6 @@
 
 #include "types.hpp"
 
-#include "storage/table.hpp"
-
 namespace opossum {
 
 // AbstractOperator is the abstract super class for all operators.
@@ -23,6 +21,8 @@ namespace opossum {
 // Operators shall not be executed twice.
 //
 // Find more information about operators in our Wiki: https://github.com/hyrise/hyrise/wiki/operator-concept
+
+class Table;
 
 class AbstractOperator : private Noncopyable {
  public:

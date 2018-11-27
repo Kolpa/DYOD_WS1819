@@ -45,7 +45,7 @@ class TableScanImpl : public BaseTableScanImpl {
                                           _input_table->column_type(column_index));
     }
 
-    const auto scanner = AbstractScanner<T>::from_scan_type(_scan_type);
+    const auto scanner = AbstractSegmentScanner<T>::from_scan_type(_scan_type);
 
     // Iterate through all values of the input table.
     // All values, which fulfill the filter criterion, will be added to the output table;

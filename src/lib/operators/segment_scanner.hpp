@@ -12,16 +12,29 @@
 
 namespace opossum {
 
+/**
+ * This class allows to iterate over all unsigned integers in an interval.
+ * Our use case is to iterate over an array.
+ */
 class ContinuousIndexFetcher {
  public:
-  ContinuousIndexFetcher() : ContinuousIndexFetcher(0, std::numeric_limits<size_t>::max()) {}
+  /**
+   * Initializes a new index fetcher in the interval [0, size_t::max)
+   */
+  explicit ContinuousIndexFetcher() : ContinuousIndexFetcher(0, std::numeric_limits<size_t>::max()) {}
 
-  ContinuousIndexFetcher(size_t start_index, size_t end_index)
+  /**
+   * Initializes a new index fetcher in the interval [start_index, end_index)
+   */
+  explicit ContinuousIndexFetcher(size_t start_index, size_t end_index)
       : start_index{start_index}, end_index{end_index}, _current{start_index - 1} {};
 
   const size_t start_index;
   const size_t end_index;
 
+  /**
+   * Returns the next index. Increases current() by one.
+   */
   size_t next() { return ++_current; }
 
   bool has_next() { return _current + 1 < end_index; }
@@ -32,18 +45,31 @@ class ContinuousIndexFetcher {
   size_t _current;
 };
 
+/**
+ * The PosListIndexFetcher allows to iterate over a PosList in a given interval [start_index, end_index).
+ * It returns the value in the given PosList at the current index.
+ */
 class PosListIndexFetcher {
  public:
-  PosListIndexFetcher(size_t start_index, size_t end_index, const PosList& pos_list)
+  /**
+   * Initializes a new PosListIndexFetcher for a given PosList.
+   */
+  explicit PosListIndexFetcher(size_t start_index, size_t end_index, const PosList& pos_list)
       : start_index{start_index}, end_index{end_index}, _current{start_index - 1}, _pos_list{pos_list} {};
 
   const size_t start_index;
   const size_t end_index;
 
+  /**
+   * Returns the value in PosList at the next index and increases the internal index.
+   */
   size_t next() { return _pos_list[++_current].chunk_offset; }
 
   bool has_next() { return _current + 1 < end_index; }
 
+  /**
+   * Returns the value in PosList at the given index.
+   */
   size_t current() { return _pos_list[_current].chunk_offset; }
 
  protected:
@@ -69,10 +95,14 @@ class LessThanEqualsScanner;
 template <typename T>
 class NotEqualsScanner;
 
+/**
+ * Scanner to select certain values in a variety of segments
+ * @tparam T Type of the values the scanner will operate on,
+ */
 template <typename T>
-class AbstractScanner {
+class AbstractSegmentScanner {
  public:
-  virtual ~AbstractScanner() = default;
+  virtual ~AbstractSegmentScanner() = default;
 
   virtual bool compare(const T& value, const T& cmp_value) = 0;
 
@@ -134,7 +164,7 @@ class AbstractScanner {
     return result;
   }
 
-  static std::unique_ptr<AbstractScanner> from_scan_type(ScanType scan_type) {
+  static std::unique_ptr<AbstractSegmentScanner> from_scan_type(ScanType scan_type) {
     switch (scan_type) {
       case ScanType::OpEquals:
         return std::make_unique<EqualsScanner<T>>();
@@ -210,7 +240,7 @@ class AbstractScanner {
 };
 
 template <typename T>
-class LessThanScanner : public AbstractScanner<T> {
+class LessThanScanner : public AbstractSegmentScanner<T> {
  public:
   bool compare(const T& value, const T& cmp_value) override { return value < cmp_value; }
 
@@ -225,7 +255,7 @@ class LessThanScanner : public AbstractScanner<T> {
 };
 
 template <typename T>
-class LessThanEqualsScanner : public AbstractScanner<T> {
+class LessThanEqualsScanner : public AbstractSegmentScanner<T> {
  public:
   bool compare(const T& value, const T& cmp_value) override { return value <= cmp_value; }
 
@@ -240,7 +270,7 @@ class LessThanEqualsScanner : public AbstractScanner<T> {
 };
 
 template <typename T>
-class EqualsScanner : public AbstractScanner<T> {
+class EqualsScanner : public AbstractSegmentScanner<T> {
  public:
   bool compare(const T& value, const T& cmp_value) override { return value == cmp_value; }
 
@@ -259,7 +289,7 @@ class EqualsScanner : public AbstractScanner<T> {
 };
 
 template <typename T>
-class NotEqualsScanner : public AbstractScanner<T> {
+class NotEqualsScanner : public AbstractSegmentScanner<T> {
  public:
   bool compare(const T& value, const T& cmp_value) override { return value != cmp_value; }
 
@@ -279,7 +309,7 @@ class NotEqualsScanner : public AbstractScanner<T> {
 };
 
 template <typename T>
-class GreaterThanScanner : public AbstractScanner<T> {
+class GreaterThanScanner : public AbstractSegmentScanner<T> {
  public:
   bool compare(const T& value, const T& cmp_value) override { return value > cmp_value; }
 
@@ -295,7 +325,7 @@ class GreaterThanScanner : public AbstractScanner<T> {
 };
 
 template <typename T>
-class GreaterThanEqualsScanner : public AbstractScanner<T> {
+class GreaterThanEqualsScanner : public AbstractSegmentScanner<T> {
  public:
   bool compare(const T& value, const T& cmp_value) override { return value >= cmp_value; }
 
