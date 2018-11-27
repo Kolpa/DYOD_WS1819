@@ -12,6 +12,11 @@ jobs:
     steps:
       - checkout
       - run:
+          name: install deps
+          command: |
+            apt-get update
+            apt-get install --no-install-recommends -y parallel
+      - run:
           name: lint code
           command: |
             ./scripts/lint.sh
@@ -24,7 +29,7 @@ jobs:
           command: |
             apt-get update
             boostall=$(apt-cache search --names-only '^libboost1.[0-9]+-all-dev$' | sort | tail -n 1 | cut -f1 -d' ')
-            apt-get install --no-install-recommends -y gcovr python2.7 gcc-7 build-essential cmake parallel $boostall
+            apt-get install --no-install-recommends -y ca-certificates gcovr python2.7 gcc-7 build-essential cmake $boostall
       - run:
           name: prepare build
           command: |
@@ -48,6 +53,11 @@ jobs:
   test:
     executor: docker_dude
     steps:
+      - run:
+          name: install deps
+          command: |
+            apt-get update
+            apt-get install --no-install-recommends -y ca-certificates
       - attach_workspace:
         at: ~/project
       - run:
@@ -62,6 +72,8 @@ jobs:
           name: install deps
           command: |
             pip install --user cpp-coveralls
+            apt-get update
+            apt-get install --no-install-recommends -y ca-certificates
       - attach_workspace:
         at: ~/project
       - run:
