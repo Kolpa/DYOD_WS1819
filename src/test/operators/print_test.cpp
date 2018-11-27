@@ -62,6 +62,20 @@ TEST_F(OperatorsPrintTest, EmptyTable) {
   EXPECT_TRUE(output_str.find("string") != std::string::npos);
 
   EXPECT_TRUE(output_str.find("Empty chunk.") != std::string::npos);
+
+  output.seekp(0);
+
+  pr->print(t, output);
+
+  output_str = output.str();
+
+  // rather hard-coded tests
+  EXPECT_TRUE(output_str.find("col_1") != std::string::npos);
+  EXPECT_TRUE(output_str.find("col_2") != std::string::npos);
+  EXPECT_TRUE(output_str.find("int") != std::string::npos);
+  EXPECT_TRUE(output_str.find("string") != std::string::npos);
+
+  EXPECT_TRUE(output_str.find("Empty chunk.") != std::string::npos);
 }
 
 TEST_F(OperatorsPrintTest, FilledTable) {
