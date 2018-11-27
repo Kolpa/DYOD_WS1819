@@ -1,16 +1,30 @@
-version: 2
-jobs:
-  build:
+version: 2.1
+
+executors:
+  docker_dude:
     docker:
       - image: ubuntu:bionic
+    working_directory: ~/project
+
+jobs:
+  lint:
+    executor: docker_dude
     steps:
+      - checkout
+      - run:
+          name: lint code
+          command: |
+            ./scripts/lint.sh
+  build:
+    executor: docker_dude
+    steps:
+      - checkout
       - run:
           name: install deps
           command: |
             apt-get update
             boostall=$(apt-cache search --names-only '^libboost1.[0-9]+-all-dev$' | sort | tail -n 1 | cut -f1 -d' ')
             apt-get install --no-install-recommends -y gcovr python2.7 gcc-7 build-essential cmake parallel $boostall
-      - checkout
       - run:
           name: prepare build
           command: |
@@ -21,4 +35,55 @@ jobs:
           name: run build
           command: |
             cd build
-            make
+            make hyriseCoverage hyriseTest
+      - run:
+          name: copy test files
+          command: |
+            mkdir -p build/src/test/tables
+            cp src/test/tables/*.tbl build/src/test/tables/
+      - persist_to_workspace:
+          root: ~/project
+          paths:
+            - build
+  test:
+    executor: docker_dude
+    steps:
+      - attach_workspace:
+        at: ~/project
+      - run:
+          name: running tests
+          command: |
+            cd build
+            ./hyriseTest
+  cover:
+    executor: docker_dude
+    steps:
+      - run:
+          name: install deps
+          command: |
+            pip install --user cpp-coveralls
+      - attach_workspace:
+        at: ~/project
+      - run:
+          name: running coverage
+          command: |
+            cd build
+            ./hyriseCoverage
+      - run:
+          name: submitting coverage
+          command: |
+            cd build
+            coveralls --exclude lib --exclude tests --gcov-options '\-lp'
+
+workflows:
+  version: 2
+  lint-test-cover:
+    jobs:
+      - lint
+      - build
+      - test:
+          requires:
+            - build
+      - cover:
+          requires:
+            - build
