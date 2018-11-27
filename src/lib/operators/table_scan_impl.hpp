@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "base_table_scan_impl.hpp"
+#include "resolve_type.hpp"
 #include "segment_scanner.hpp"
 #include "type_cast.hpp"
 #include "types.hpp"
@@ -33,6 +34,18 @@ class TableScanImpl : public BaseTableScanImpl {
         _scan_type(scan_type),
         _search_value(boost::get<T>(search_value)) {
     DebugAssert(input_table != nullptr, "Input table must be defined.");
+
+    hana::for_each(data_types, [&](auto x) {
+      if (std::string(hana::first(x)) == _input_table->column_type(column_id)) {
+        // The + before hana::second - which returns a reference - converts its return value
+        // into a value so that we can access ::type
+        using DataType = typename decltype(+hana::second(x))::type;
+        if (!std::is_same_v<T, DataType>) {
+          throw std::runtime_error("Column type does not match with ScanType of TableScanImpl.");
+        }
+        return;
+      }
+    });
   }
 
  protected:
