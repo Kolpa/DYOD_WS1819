@@ -21,7 +21,7 @@ class ContinuousIndexFetcher {
   /**
    * Initializes a new index fetcher in the interval [0, size_t::max)
    */
-  explicit ContinuousIndexFetcher() : ContinuousIndexFetcher(0, std::numeric_limits<size_t>::max()) {}
+  ContinuousIndexFetcher() : ContinuousIndexFetcher(0, std::numeric_limits<size_t>::max()) {}
 
   /**
    * Initializes a new index fetcher in the interval [start_index, end_index)

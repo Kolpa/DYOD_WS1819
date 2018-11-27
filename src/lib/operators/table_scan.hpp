@@ -13,7 +13,7 @@ class Table;
 class TableScan : public AbstractOperator {
  public:
   explicit TableScan(const std::shared_ptr<const AbstractOperator> in, ColumnID column_id, const ScanType scan_type,
-            const AllTypeVariant search_value);
+                     const AllTypeVariant search_value);
 
   ColumnID column_id() const;
   ScanType scan_type() const;
