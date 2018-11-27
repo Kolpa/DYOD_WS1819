@@ -63,6 +63,7 @@ jobs:
   cover:
     executor: docker_dude
     steps:
+      - checkout
       - run:
           name: install deps
           command: |
