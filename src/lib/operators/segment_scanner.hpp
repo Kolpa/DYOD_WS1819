@@ -12,10 +12,9 @@
 
 namespace opossum {
 
-
 class ContinuousIndexFetcher {
  public:
-  ContinuousIndexFetcher() : ContinuousIndexFetcher(0, std::numeric_limits<size_t>::max()) {};
+  ContinuousIndexFetcher() : ContinuousIndexFetcher(0, std::numeric_limits<size_t>::max()) {}
 
   ContinuousIndexFetcher(size_t start_index, size_t end_index)
       : start_index{start_index}, end_index{end_index}, _current{start_index - 1} {};
@@ -23,17 +22,11 @@ class ContinuousIndexFetcher {
   const size_t start_index;
   const size_t end_index;
 
-  size_t next() {
-    return ++_current;
-  }
+  size_t next() { return ++_current; }
 
-  bool has_next() {
-    return _current + 1 < end_index;
-  };
+  bool has_next() { return _current + 1 < end_index; }
 
-  size_t current() {
-    return _current;
-  }
+  size_t current() { return _current; }
 
  protected:
   size_t _current;
@@ -47,46 +40,38 @@ class PosListIndexFetcher {
   const size_t start_index;
   const size_t end_index;
 
-  size_t next() {
-    return _pos_list[++_current].chunk_offset;
-  }
+  size_t next() { return _pos_list[++_current].chunk_offset; }
 
-  bool has_next() {
-    return _current + 1 < end_index;
-  };
+  bool has_next() { return _current + 1 < end_index; }
 
-  size_t current() {
-    return _pos_list[_current].chunk_offset;
-  }
+  size_t current() { return _pos_list[_current].chunk_offset; }
 
  protected:
   size_t _current;
   const PosList& _pos_list;
 };
 
-template<typename T>
+template <typename T>
 class EqualsScanner;
 
-template<typename T>
+template <typename T>
 class GreaterThanScanner;
 
-template<typename T>
+template <typename T>
 class GreaterThanEqualsScanner;
 
-template<typename T>
+template <typename T>
 class LessThanScanner;
 
-template<typename T>
+template <typename T>
 class LessThanEqualsScanner;
 
-template<typename T>
+template <typename T>
 class NotEqualsScanner;
 
-template<typename T>
+template <typename T>
 class AbstractScanner {
-
  public:
-
   virtual ~AbstractScanner() = default;
 
   virtual bool compare(const T& value, const T& cmp_value) = 0;
@@ -94,11 +79,9 @@ class AbstractScanner {
   PosList scan(const ChunkID chunk_id, const std::shared_ptr<BaseSegment>& segment, const T& cmp_value) {
     if (const auto& reference_segment = std::dynamic_pointer_cast<ReferenceSegment>(segment)) {
       return scan(chunk_id, *reference_segment, cmp_value);
-    }
-    else if (const auto& value_segment = std::dynamic_pointer_cast<ValueSegment<T>>(segment)) {
+    } else if (const auto& value_segment = std::dynamic_pointer_cast<ValueSegment<T>>(segment)) {
       return scan(chunk_id, *value_segment, cmp_value);
-    }
-    else if (const auto& dictionary_segment = std::dynamic_pointer_cast<DictionarySegment<T>>(segment)) {
+    } else if (const auto& dictionary_segment = std::dynamic_pointer_cast<DictionarySegment<T>>(segment)) {
       return scan(chunk_id, *dictionary_segment, cmp_value);
     }
 
@@ -116,10 +99,9 @@ class AbstractScanner {
   }
 
   PosList scan(const ChunkID chunk_id, const ReferenceSegment& segment, const T& cmp_value) {
-
     const auto& pos_list = *segment.pos_list();
     if (pos_list.empty()) {
-      return PosList {};
+      return PosList{};
     }
 
     const auto& table = segment.referenced_table();
@@ -128,23 +110,25 @@ class AbstractScanner {
     size_t start_index = 0;
     auto last_chunk_id = pos_list[0].chunk_id;
 
-    for (size_t index = 1; index < pos_list.size(); ++index){
+    for (size_t index = 1; index < pos_list.size(); ++index) {
       const auto& row_id = pos_list[index];
       if (row_id.chunk_id != last_chunk_id) {
         const auto& chunk = table->get_chunk(last_chunk_id);
         const auto base_segment = chunk.get_segment(segment.referenced_column_id());
         const auto tmp_result = scan(chunk_id, base_segment, cmp_value, pos_list, start_index, index);
-        result.insert(result.end(), std::make_move_iterator(tmp_result.begin()), std::make_move_iterator(tmp_result.end()));
+        result.insert(result.end(), std::make_move_iterator(tmp_result.begin()),
+                      std::make_move_iterator(tmp_result.end()));
         start_index = index;
         last_chunk_id = row_id.chunk_id;
       }
     }
 
-    { // Exact duplicate to lines above to add range from [start_index, pos_list.size())
+    {  // Exact duplicate to lines above to add range from [start_index, pos_list.size())
       const auto& chunk = table->get_chunk(last_chunk_id);
       const auto base_segment = chunk.get_segment(segment.referenced_column_id());
       const auto tmp_result = scan(chunk_id, base_segment, cmp_value, pos_list, start_index, pos_list.size());
-      result.insert(result.end(), std::make_move_iterator(tmp_result.begin()), std::make_move_iterator(tmp_result.end()));
+      result.insert(result.end(), std::make_move_iterator(tmp_result.begin()),
+                    std::make_move_iterator(tmp_result.end()));
     }
 
     return result;
@@ -170,17 +154,16 @@ class AbstractScanner {
   }
 
  protected:
-
   virtual bool compare_by_value_id(const ValueID& value_id, const ValueID& cmp_value_value_id) = 0;
 
   virtual ValueID get_value_id(const DictionarySegment<T>& segment, const T& value) = 0;
 
-  PosList scan(const ChunkID chunk_id, const std::shared_ptr<BaseSegment>& segment, const T& cmp_value, const PosList& pos_list, size_t start_index, size_t end_index) {
+  PosList scan(const ChunkID chunk_id, const std::shared_ptr<BaseSegment>& segment, const T& cmp_value,
+               const PosList& pos_list, size_t start_index, size_t end_index) {
     auto index_fetcher = PosListIndexFetcher(start_index, end_index, pos_list);
     if (const auto& value_segment = std::dynamic_pointer_cast<ValueSegment<T>>(segment)) {
       return this->template scan<PosListIndexFetcher>(chunk_id, *value_segment, cmp_value, index_fetcher);
-    }
-    else if (const auto& dictionary_segment = std::dynamic_pointer_cast<DictionarySegment<T>>(segment)) {
+    } else if (const auto& dictionary_segment = std::dynamic_pointer_cast<DictionarySegment<T>>(segment)) {
       return this->template scan<PosListIndexFetcher>(chunk_id, *dictionary_segment, cmp_value, index_fetcher);
     }
     throw std::runtime_error("Unsupported segment type.");
@@ -189,7 +172,6 @@ class AbstractScanner {
   template <typename IndexFetcher>
   PosList scan(const ChunkID chunk_id, const DictionarySegment<T>& segment, const T& cmp_value,
                IndexFetcher& index_fetcher) {
-
     const auto value_id_to_compare_to = get_value_id(segment, cmp_value);
 
     // Todo: there are cases where we could have a select all or select none case here.
@@ -212,7 +194,6 @@ class AbstractScanner {
   template <typename IndexFetcher>
   PosList scan(const ChunkID chunk_id, const ValueSegment<T>& segment, const T& cmp_value,
                IndexFetcher& index_fetcher) {
-
     PosList pos_list;
 
     const auto& values = segment.values();
@@ -226,16 +207,12 @@ class AbstractScanner {
 
     return pos_list;
   }
-
 };
 
-template<typename T>
+template <typename T>
 class LessThanScanner : public AbstractScanner<T> {
-
  public:
-  bool compare(const T& value, const T& cmp_value) override {
-    return value < cmp_value;
-  }
+  bool compare(const T& value, const T& cmp_value) override { return value < cmp_value; }
 
  protected:
   ValueID get_value_id(const DictionarySegment<T>& segment, const T& cmp_value) override {
@@ -247,13 +224,10 @@ class LessThanScanner : public AbstractScanner<T> {
   };
 };
 
-template<typename T>
+template <typename T>
 class LessThanEqualsScanner : public AbstractScanner<T> {
-
  public:
-  bool compare(const T& value, const T& cmp_value) override {
-    return value <= cmp_value;
-  }
+  bool compare(const T& value, const T& cmp_value) override { return value <= cmp_value; }
 
  protected:
   ValueID get_value_id(const DictionarySegment<T>& segment, const T& cmp_value) override {
@@ -265,13 +239,10 @@ class LessThanEqualsScanner : public AbstractScanner<T> {
   }
 };
 
-template<typename T>
+template <typename T>
 class EqualsScanner : public AbstractScanner<T> {
-
  public:
-  bool compare(const T& value, const T& cmp_value) override {
-    return value == cmp_value;
-  }
+  bool compare(const T& value, const T& cmp_value) override { return value == cmp_value; }
 
  protected:
   ValueID get_value_id(const DictionarySegment<T>& segment, const T& cmp_value) override {
@@ -287,13 +258,10 @@ class EqualsScanner : public AbstractScanner<T> {
   }
 };
 
-template<typename T>
+template <typename T>
 class NotEqualsScanner : public AbstractScanner<T> {
-
  public:
-  bool compare(const T& value, const T& cmp_value) override {
-    return value != cmp_value;
-  }
+  bool compare(const T& value, const T& cmp_value) override { return value != cmp_value; }
 
  protected:
   ValueID get_value_id(const DictionarySegment<T>& segment, const T& cmp_value) override {
@@ -310,13 +278,10 @@ class NotEqualsScanner : public AbstractScanner<T> {
   }
 };
 
-template<typename T>
+template <typename T>
 class GreaterThanScanner : public AbstractScanner<T> {
-
  public:
-  bool compare(const T& value, const T& cmp_value) override {
-    return value > cmp_value;
-  }
+  bool compare(const T& value, const T& cmp_value) override { return value > cmp_value; }
 
  protected:
   ValueID get_value_id(const DictionarySegment<T>& segment, const T& cmp_value) override {
@@ -329,13 +294,10 @@ class GreaterThanScanner : public AbstractScanner<T> {
   }
 };
 
-template<typename T>
+template <typename T>
 class GreaterThanEqualsScanner : public AbstractScanner<T> {
-
  public:
-  bool compare(const T& value, const T& cmp_value) override {
-    return value >= cmp_value;
-  }
+  bool compare(const T& value, const T& cmp_value) override { return value >= cmp_value; }
 
  protected:
   ValueID get_value_id(const DictionarySegment<T>& segment, const T& cmp_value) override {
@@ -348,7 +310,4 @@ class GreaterThanEqualsScanner : public AbstractScanner<T> {
   }
 };
 
-
-
-
-} // namespace opossum
+}  // namespace opossum

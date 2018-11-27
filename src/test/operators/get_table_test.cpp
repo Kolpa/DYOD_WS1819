@@ -38,5 +38,4 @@ TEST_F(OperatorsGetTableTest, GetTableName) {
   EXPECT_EQ(gt->table_name(), "theNicestTestTable");
 }
 
-
 }  // namespace opossum
