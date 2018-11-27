@@ -15,7 +15,7 @@ jobs:
           name: install deps
           command: |
             apt-get update
-            apt-get install --no-install-recommends -y parallel
+            apt-get install --no-install-recommends -y parallel python2.7
       - run:
           name: lint code
           command: |
@@ -59,7 +59,7 @@ jobs:
             apt-get update
             apt-get install --no-install-recommends -y ca-certificates
       - attach_workspace:
-        at: ~/project
+          at: ~/project
       - run:
           name: running tests
           command: |
@@ -71,11 +71,11 @@ jobs:
       - run:
           name: install deps
           command: |
-            pip install --user cpp-coveralls
             apt-get update
-            apt-get install --no-install-recommends -y ca-certificates
+            apt-get install --no-install-recommends -y ca-certificates python2.7 python-pip
+            pip install --user cpp-coveralls
       - attach_workspace:
-        at: ~/project
+          at: ~/project
       - run:
           name: running coverage
           command: |
