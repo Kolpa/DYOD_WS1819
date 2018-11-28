@@ -68,7 +68,7 @@ jobs:
           name: install deps
           command: |
             apt-get update
-            apt-get install -y ca-certificates python2.7 python-pip git
+            apt-get install -y ca-certificates python2.7 python-pip git python-yaml
             pip install cpp-coveralls
       - attach_workspace:
           at: ~/project
